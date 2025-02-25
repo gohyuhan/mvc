@@ -9,7 +9,7 @@ pub struct QuitButton;
 #[derive(Component)]
 pub struct PathLabel;
 
-#[derive(Component)]
+#[derive(Component, Debug)]
 pub struct OrbitCamera {
     pub window_id: String,
     pub radius: f32,

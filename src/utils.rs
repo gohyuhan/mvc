@@ -5,8 +5,9 @@ use bevy::{
 };
 
 use crate::{
+    capture,
     resource::{ActiveWindowId, OperationWindowRelatedEntities},
-    states::AppState,
+    states::{AppState, IsCapture},
 };
 
 pub fn track_active_window(
@@ -27,21 +28,36 @@ pub fn switch_state_on_window_event(
     entities: Query<Entity>,
     mut window_close_requested_events: EventReader<WindowCloseRequested>,
     mut state: ResMut<NextState<AppState>>,
+    mut capurestate: ResMut<NextState<IsCapture>>,
     mut operationWindow: ResMut<OperationWindowRelatedEntities>,
 ) {
     for ev in window_close_requested_events.read() {
-        println!("Window Close Requested - Switching back to Main Menu");
-
-        // Only switch state if not already in Main Menu
-        println!("Current State: {:?}", ev.window);
-
-        println!("windows: {:?}", windows);
-        println!("entities: {:?}", entities);
         if ev.window == operationWindow.window.unwrap() {
             state.set(AppState::OperationEnd);
+            capurestate.set(IsCapture::CaptureStop);
             for entity in operationWindow.entitiesList.as_mut().unwrap() {
                 commands.entity(*entity).despawn_recursive();
             }
+        }
+    }
+}
+
+// check keyboard in interactive mode for space bar to take snapshot
+pub fn keyboard_interact(
+    keys: Res<ButtonInput<KeyCode>>,
+    mut captureState: ResMut<NextState<IsCapture>>,
+    currentCaptureState: Res<State<IsCapture>>,
+) {
+    let s = currentCaptureState.as_ref().get();
+    if *s == IsCapture::CaptureStop {
+        if keys.just_pressed(KeyCode::Space) {
+            println!("start capture");
+            captureState.set(IsCapture::CaptureOngoing);
+        }
+    } else if *s == IsCapture::CaptureOngoing {
+        if keys.just_pressed(KeyCode::Space) {
+            println!("stop capture");
+            captureState.set(IsCapture::CaptureStop);
         }
     }
 }

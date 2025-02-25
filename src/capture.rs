@@ -5,12 +5,12 @@ use bevy::{
 
 use crate::resource::OperationWindowRelatedEntities;
 
-fn screenshot_on_spacebar(
+pub fn take_snapshot(
     mut commands: Commands,
     mut counter: Local<u32>,
     mut operationWindow: ResMut<OperationWindowRelatedEntities>,
 ) {
-    let path = format!("./screenshot/screenshot-{}.png", *counter);
+    let path = format!("./screenshot/screenshot-{}.jpg", *counter);
     *counter += 1;
     commands
         .spawn(Screenshot::window(operationWindow.window.unwrap()))

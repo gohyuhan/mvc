@@ -44,6 +44,7 @@ fn main() {
         primary_window: Some(Window {
             title: "MVC MAIN MENU!".into(),
             name: Some("MVC".into()),
+            position:WindowPosition::At(IVec2{x:1,y:1}),
             resolution: (500., 750.).into(),
             // Tells Wasm to resize the window according to the available canvas
             fit_canvas_to_parent: true,
@@ -64,12 +65,14 @@ fn main() {
     }),));
     // set initial state
     app.insert_state(AppState::OperationEnd);
+    app.insert_state(IsCapture::CaptureStop);
     app.add_systems(Startup, menu);
     app.add_systems(
         Update,
         (
             file_drag_and_drop_system,
             button_click_system.run_if(in_state(AppState::OperationEnd)),
+            keyboard_interact.run_if(in_state(AppState::OperationStart)),
             setup_ambient_light,
             track_active_window,
             orbit_camera,
