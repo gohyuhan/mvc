@@ -14,3 +14,10 @@ pub struct OrbitCamera {
     pub pitch: f32,
     pub is_dragging: bool,
 }
+
+#[derive(Component, Debug)]
+pub struct ModelPosition {
+    pub window: Entity,
+    pub x: f32,
+    pub y: f32,
+}

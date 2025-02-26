@@ -75,6 +75,7 @@ fn main() {
             file_drag_and_drop_system,
             button_click_system.run_if(in_state(AppState::MainMenu)),
             keyboard_interact.run_if(in_state(AppState::OperationMode)),
+            reposition_model.run_if(in_state(AppState::OperationMode)),
             setup_ambient_light,
             track_active_window,
             interactive_orbit_camera,

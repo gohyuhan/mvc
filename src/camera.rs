@@ -18,9 +18,9 @@ pub fn interactive_orbit_camera(
     counter: Local<u32>,
     operation_window: ResMut<OperationWindowRelatedEntities>,
 ) {
-    let ordit_query = query.get_single_mut();
+    let orbit_query = query.get_single_mut();
 
-    match ordit_query {
+    match orbit_query {
         Ok((mut transform, mut orbit)) => {
             if orbit.window == operation_window.window.unwrap() {
                 // Handle left mouse button for drag
@@ -34,12 +34,12 @@ pub fn interactive_orbit_camera(
                 // Orbiting when dragging
                 if orbit.is_dragging {
                     for ev in motion_evr.read() {
-                        let sensitivity = 0.01;
+                        let sensitivity = 0.005;
                         orbit.yaw -= ev.delta.x * sensitivity;
                         orbit.pitch += ev.delta.y * sensitivity;
 
                         // Clamp pitch to avoid flipping
-                        orbit.pitch = orbit.pitch.clamp(-1.5, 1.5);
+                        orbit.pitch = orbit.pitch.clamp(-1., 1.);
                     }
                 }
 
