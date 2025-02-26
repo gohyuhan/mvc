@@ -24,6 +24,19 @@ mod capture;
 mod camera;
 use camera::*;
 
+// Note:
+// The keyboard command when in the interactive mode
+//
+// C: capture 1 snapshot
+// L: enter or exit live preview mode
+// I: enter or exit interactive mode
+// space: enter or exit live capture mode
+// arrow key: move the model [ soon will be change to rotate model ]
+// wasd: move the camera
+// mouse wheel: zoom in or out
+// mouse left click and move: rotate the model
+
+
 fn main() {
     let mut app = App::new();
     // set the resource
