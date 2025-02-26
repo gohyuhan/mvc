@@ -11,10 +11,42 @@ use crate::{
     states::{AppState, OperationState},
 };
 
-pub fn check_file(file_path: &str) -> bool {
+pub fn check_model_file(file_path: &str) -> bool {
     match Path::new(file_path).extension() {
         Some(ext) => {
             if ext == "glb" || ext == "gltf" {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        None => false,
+    }
+}
+
+pub fn check_skybox_file(file_path: &str) -> bool {
+    match Path::new(file_path).extension() {
+        Some(ext) => {
+            if ext == "webp"
+                || ext == "jpg"
+                || ext == "jpeg"
+                || ext == "png"
+                || ext == "hdr"
+                || ext == "exr"
+            {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        None => false,
+    }
+}
+
+pub fn check_json_file(file_path: &str) -> bool {
+    match Path::new(file_path).extension() {
+        Some(ext) => {
+            if ext == "json" {
                 return true;
             } else {
                 return false;

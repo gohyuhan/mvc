@@ -1,8 +1,13 @@
-use bevy::ecs::{entity::Entity, system::Resource};
+use bevy::{
+    asset::Handle,
+    ecs::{entity::Entity, system::Resource},
+    image::Image,
+};
 
-#[derive(Resource, Debug)]
+#[derive(Resource, Debug, Clone)]
 pub struct AssetPath {
-    pub path: String,
+    pub model_path: String,
+    pub skybox_path: String,
 }
 
 #[derive(Resource, Debug)]
@@ -19,4 +24,9 @@ pub struct ActiveWindowId {
 pub struct OperationWindowRelatedEntities {
     pub window: Option<Entity>,
     pub entities_list: Option<Vec<Entity>>,
+}
+
+#[derive(Resource)]
+pub struct SkyboxAttribute {
+    pub skybox_handler: Option<Handle<Image>>,
 }

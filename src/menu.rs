@@ -1,11 +1,11 @@
 use bevy::prelude::*;
 
 use crate::{
-    components::{InteractiveMode, PathLabel},
+    components::{InteractiveMode, ModelPathLabel, SkyboxPathLabel},
     render::interactive,
-    resource::{AssetPath, OperationWindowRelatedEntities},
+    resource::{AssetPath, OperationWindowRelatedEntities, SkyboxAttribute},
     states::{AppState, OperationState},
-    utils::check_file,
+    utils::{check_json_file, check_model_file, check_skybox_file},
 };
 
 const MENU_FONT_SIZE: f32 = 50.;
@@ -13,7 +13,7 @@ const PATH_FONT_SIZE: f32 = 20.;
 const FONT_SIZE: f32 = 30.;
 
 // To render the Main Menu of MVC for user to interacte to begin operation and such...
-pub fn menu(mut commands: Commands, asset_server: Res<AssetServer>, path: Res<AssetPath>) {
+pub fn menu(mut commands: Commands, asset_server: Res<AssetServer>) {
     let font = asset_server.load("fonts/FiraSans-Bold.ttf");
 
     // Camera
@@ -54,7 +54,7 @@ pub fn menu(mut commands: Commands, asset_server: Res<AssetServer>, path: Res<As
 
                     // to label the path to the 3d file to let user know which model will be render
                     parent.spawn((
-                        Text::new(path.path.clone()),
+                        Text::new("[3d model asset]: -"),
                         Node {
                             top: Val::Px(20.),
                             justify_content: JustifyContent::Center,
@@ -66,7 +66,24 @@ pub fn menu(mut commands: Commands, asset_server: Res<AssetServer>, path: Res<As
                             font_size: PATH_FONT_SIZE,
                             ..default()
                         },
-                        PathLabel,
+                        ModelPathLabel,
+                    ));
+
+                    // to label the path to the 3d file to let user know which model will be render
+                    parent.spawn((
+                        Text::new("[skybox asset]: -"),
+                        Node {
+                            top: Val::Px(20.),
+                            justify_content: JustifyContent::Center,
+                            align_items: AlignItems::Center,
+                            ..default()
+                        },
+                        TextFont {
+                            font: font.clone(),
+                            font_size: PATH_FONT_SIZE,
+                            ..default()
+                        },
+                        SkyboxPathLabel,
                     ));
 
                     // Button to Start 3d render operation
@@ -104,29 +121,64 @@ pub fn menu(mut commands: Commands, asset_server: Res<AssetServer>, path: Res<As
 pub fn button_click_system(
     commands: Commands,
     asset_server: Res<AssetServer>,
-    path: ResMut<AssetPath>,
+    asset_path: ResMut<AssetPath>,
     interactive_mode: Query<&Interaction, (Changed<Interaction>, With<InteractiveMode>)>,
-    mut query: Query<(&mut Text, &PathLabel)>,
-    mut text_color_query: Query<(&mut TextColor, &PathLabel)>,
     operation_window: ResMut<OperationWindowRelatedEntities>,
     mut app_state: ResMut<NextState<AppState>>,
     mut operation_state: ResMut<NextState<OperationState>>,
+    images: ResMut<Assets<Image>>,
+    skybox_attributes: Res<SkyboxAttribute>,
+    // to query back those text for changing the inner text
+    mut path_label_param_set: ParamSet<(
+        Query<(&mut Text, &ModelPathLabel)>,
+        Query<(&mut Text, &SkyboxPathLabel)>,
+    )>,
+    // to query back those text color for changing the text color
+    mut path_label_color_param_set: ParamSet<(
+        Query<(&mut TextColor, &ModelPathLabel)>,
+        Query<(&mut TextColor, &SkyboxPathLabel)>,
+    )>,
 ) {
     // Check if the files and all were valid then enter window to render 3d model or warn user about invalid file
     if let Ok(Interaction::Pressed) = interactive_mode.get_single() {
         println!("Enter Opration Mode");
-        let p = path.path.clone();
-        println!("{}", p);
-        if check_file(&p) {
-            interactive(commands, asset_server, p, operation_window);
-            app_state.set(AppState::OperationMode);
-            operation_state.set(OperationState::Interactive)
-        } else {
-            for (mut text, _) in &mut query {
-                text.0 = "3d model asset: Please Provide a valid file".to_string();
+        let a_p = asset_path.clone();
+        println!("{:?}", a_p);
+        let mut proceed = true;
+        if !check_model_file(&a_p.model_path) {
+            for (mut text, _) in path_label_param_set.p0().iter_mut() {
+                text.0 = "[3d model asset]: Please Provide a valid file".to_string();
             }
-            for (mut text, _) in &mut text_color_query {
+            for (mut text, _) in &mut path_label_color_param_set.p0().iter_mut() {
                 text.0 = Color::srgb(255., 0.0, 0.0);
+            }
+
+            proceed = false;
+        } 
+        
+        if !check_skybox_file(&a_p.skybox_path) {
+            for (mut text, _) in path_label_param_set.p1().iter_mut() {
+                text.0 = "[skybox asset]: Please Provide a valid file".to_string();
+            }
+            for (mut text, _) in &mut path_label_color_param_set.p1().iter_mut() {
+                text.0 = Color::srgb(255., 0.0, 0.0);
+            }
+
+            proceed = false;
+        }
+
+        if proceed {
+            if asset_server.is_loaded(skybox_attributes.skybox_handler.as_ref().unwrap()) {
+                interactive(
+                    commands,
+                    asset_server,
+                    a_p.model_path.clone(),
+                    images,
+                    skybox_attributes,
+                    operation_window,
+                );
+                app_state.set(AppState::OperationMode);
+                operation_state.set(OperationState::Interactive)
             }
         }
     }
@@ -134,10 +186,20 @@ pub fn button_click_system(
 
 // a drop file system to handle the load in of files through d & d
 pub fn file_drag_and_drop_system(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
     mut events: EventReader<FileDragAndDrop>,
     mut three_d_model_asset_path: ResMut<AssetPath>,
-    mut query: Query<(&mut Text, &PathLabel)>,
-    mut text_color_query: Query<(&mut TextColor, &PathLabel)>,
+    // to query back those text for changing the inner text
+    mut path_label_param_set: ParamSet<(
+        Query<(&mut Text, &ModelPathLabel)>,
+        Query<(&mut Text, &SkyboxPathLabel)>,
+    )>,
+    // to query back those text color for changing the text color
+    mut path_label_color_param_set: ParamSet<(
+        Query<(&mut TextColor, &ModelPathLabel)>,
+        Query<(&mut TextColor, &SkyboxPathLabel)>,
+    )>,
 ) {
     for event in events.read() {
         if let FileDragAndDrop::DroppedFile { window, path_buf } = event {
@@ -145,22 +207,35 @@ pub fn file_drag_and_drop_system(
                 "Dropped file with path: {:?}, in window id: {:?}",
                 path_buf, window
             );
-            three_d_model_asset_path.path = path_buf.to_str().unwrap().to_string();
-            let p = three_d_model_asset_path.path.clone();
-            if !check_file(&p) {
-                for (mut text, _) in &mut query {
-                    text.0 = format!("3d model asset: {} is not a valid file", p.clone());
+            let p = path_buf.to_str().unwrap().to_string();
+
+            if check_model_file(&p) {
+                // to check if model file then save the path
+                three_d_model_asset_path.model_path = path_buf.to_str().unwrap().to_string();
+                for (mut text, _) in &mut path_label_param_set.p0().iter_mut() {
+                    text.0 = format!("[3d model asset]: {}", p.clone())
                 }
-                for (mut text, _) in &mut text_color_query {
-                    text.0 = Color::srgb(255., 0.0, 0.0);
-                }
-            } else {
-                for (mut text, _) in &mut query {
-                    text.0 = format!("3d model asset: {}", p.clone())
-                }
-                for (mut text, _) in &mut text_color_query {
+                for (mut text, _) in &mut path_label_color_param_set.p0().iter_mut() {
                     text.0 = Color::srgb(255., 255., 255.);
                 }
+            } else if check_skybox_file(&p) {
+                // to check if skybox file then save the path
+                three_d_model_asset_path.skybox_path = path_buf.to_str().unwrap().to_string();
+                // the skybox handler
+                let skybox_handle: Handle<Image> =
+                    asset_server.load(three_d_model_asset_path.skybox_path.clone());
+
+                commands.insert_resource(SkyboxAttribute {
+                    skybox_handler: Some(skybox_handle),
+                });
+                for (mut text, _) in &mut path_label_param_set.p1().iter_mut() {
+                    text.0 = format!("[skybox asset]: {}", p.clone())
+                }
+                for (mut text, _) in &mut path_label_color_param_set.p1().iter_mut() {
+                    text.0 = Color::srgb(255., 255., 255.);
+                }
+            } else if check_json_file(&p) {
+                // json file was used to make setting configuration that will be add in the future
             }
         }
     }

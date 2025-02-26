@@ -29,13 +29,17 @@ fn main() {
     // set the resource
     app.insert_resource(DirectionalLightShadowMap { size: 4096 });
     app.insert_resource(AssetPath {
-        path: "".to_string(),
+        model_path: "".to_string(),
+        skybox_path: "".to_string(),
     });
     app.insert_resource(SavePath {
         path: "".to_string(),
     });
     app.insert_resource(ActiveWindowId {
         id: "temp".to_string(),
+    });
+    app.insert_resource(SkyboxAttribute {
+        skybox_handler: None,
     });
     app.insert_resource(OperationWindowRelatedEntities {
         window: None,
@@ -78,10 +82,7 @@ fn main() {
             reposition_model.run_if(in_state(AppState::OperationMode)),
             setup_ambient_light,
             track_active_window,
-            interactive_orbit_camera,
-            // TODO: this will only be run if in interactive, another camera update function will be add for
-            //       live preview and capture mode where user have no control over the orbit camera
-            // interactive_orbit_camera.run_if(in_state(OperationState::Interactive)),
+            interactive_orbit_camera.run_if(in_state(OperationState::Interactive)),
             switch_state_on_window_event,
         ),
     );
