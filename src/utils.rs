@@ -7,7 +7,7 @@ use bevy::{
 
 use crate::{
     capture::take_snapshot,
-    resource::{ActiveWindowId, OperationWindowRelatedEntities},
+    resource::{ActiveWindowId, LiveCameraPanNumber, OperationWindowRelatedEntities},
     states::{AppState, OperationState},
 };
 
@@ -76,11 +76,15 @@ pub fn switch_state_on_window_event(
     mut app_state: ResMut<NextState<AppState>>,
     mut operation_state: ResMut<NextState<OperationState>>,
     mut operation_window: ResMut<OperationWindowRelatedEntities>,
+    mut live_camera_pan_number: ResMut<LiveCameraPanNumber>,
 ) {
     for ev in window_close_requested_events.read() {
         if ev.window == operation_window.window.unwrap() {
             app_state.set(AppState::MainMenu);
             operation_state.set(OperationState::None);
+            live_camera_pan_number.yaw = 1.0;
+            live_camera_pan_number.pitch = 1.0;
+            live_camera_pan_number.radius = 1.0;
             for entity in operation_window.entities_list.as_mut().unwrap() {
                 commands.entity(*entity).despawn_recursive();
             }

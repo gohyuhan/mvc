@@ -50,7 +50,7 @@ pub fn interactive(
     let interac_window_camera = commands
         .spawn((
             Camera3d::default(),
-            Transform::from_xyz(0.0, 1.0, 2.5).looking_at(Vec3::new(0.0, 0.0, 0.0), Vec3::Y),
+            Transform::from_xyz(0.0, 0.0, 2.5).looking_at(Vec3::new(0.0, 0.0, 0.0), Vec3::Y),
             EnvironmentMapLight {
                 diffuse_map: asset_server.load("pisa_diffuse_rgb9e5_zstd.ktx2"),
                 specular_map: asset_server.load("pisa_specular_rgb9e5_zstd.ktx2"),
@@ -73,7 +73,7 @@ pub fn interactive(
         .insert(OrbitCamera {
             window: interac_window,
             radius: 2.5,
-            yaw: 1.0,
+            yaw: 0.0,
             pitch: 0.0,
             position_x: 0.0,
             position_y: 0.0,

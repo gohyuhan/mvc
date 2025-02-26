@@ -45,6 +45,11 @@ fn main() {
         window: None,
         entities_list: None,
     });
+    app.insert_resource(LiveCameraPanNumber {
+        yaw: 1.0,
+        pitch: 1.0,
+        radius: 1.0,
+    });
     // set the plugins
     app.add_plugins((DefaultPlugins.set(WindowPlugin {
         primary_window: Some(Window {
@@ -79,10 +84,11 @@ fn main() {
             file_drag_and_drop_system,
             button_click_system.run_if(in_state(AppState::MainMenu)),
             keyboard_interact.run_if(in_state(AppState::OperationMode)),
-            reposition_model.run_if(in_state(AppState::OperationMode)),
+            reposition_model.run_if(in_state(OperationState::Interactive)),
             setup_ambient_light,
             track_active_window,
-            interactive_orbit_camera.run_if(in_state(OperationState::Interactive)),
+            interactive_orbit_camera.run_if(in_state(AppState::OperationMode)),
+            live_orbit_camera.run_if(in_state(AppState::OperationMode)),
             switch_state_on_window_event,
         ),
     );

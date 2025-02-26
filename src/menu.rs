@@ -154,8 +154,8 @@ pub fn button_click_system(
             }
 
             proceed = false;
-        } 
-        
+        }
+
         if !check_skybox_file(&a_p.skybox_path) {
             for (mut text, _) in path_label_param_set.p1().iter_mut() {
                 text.0 = "[skybox asset]: Please Provide a valid file".to_string();

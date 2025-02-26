@@ -30,3 +30,10 @@ pub struct OperationWindowRelatedEntities {
 pub struct SkyboxAttribute {
     pub skybox_handler: Option<Handle<Image>>,
 }
+
+#[derive(Resource, Debug)]
+pub struct LiveCameraPanNumber {
+    pub yaw: f32,
+    pub pitch: f32,
+    pub radius: f32,
+}
