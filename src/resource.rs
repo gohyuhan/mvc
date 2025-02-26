@@ -18,5 +18,5 @@ pub struct ActiveWindowId {
 #[derive(Resource)]
 pub struct OperationWindowRelatedEntities {
     pub window: Option<Entity>,
-    pub entitiesList: Option<Vec<Entity>>,
+    pub entities_list: Option<Vec<Entity>>,
 }

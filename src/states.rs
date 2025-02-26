@@ -3,13 +3,15 @@ use bevy::state::state::States;
 #[derive(States, Debug, Clone, Eq, PartialEq, Hash, Default)]
 pub enum AppState {
     #[default]
-    OperationEnd, // model rendering operation end or not started
-    OperationStart, // model rendering operation start or ongoing
+    MainMenu,
+    OperationMode,
 }
 
 #[derive(States, Debug, Clone, Eq, PartialEq, Hash, Default)]
-pub enum IsCapture {
+pub enum OperationState {
     #[default]
-    CaptureOngoing, // should capture
-    CaptureStop, // shoud not capture
+    None,
+    Interactive,
+    LiveCapture,
+    LivePreview,
 }

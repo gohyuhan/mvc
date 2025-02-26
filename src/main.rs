@@ -20,7 +20,9 @@ mod utils;
 use utils::*;
 
 mod capture;
-use capture::*;
+
+mod camera;
+use camera::*;
 
 fn main() {
     let mut app = App::new();
@@ -37,14 +39,14 @@ fn main() {
     });
     app.insert_resource(OperationWindowRelatedEntities {
         window: None,
-        entitiesList: None,
+        entities_list: None,
     });
     // set the plugins
     app.add_plugins((DefaultPlugins.set(WindowPlugin {
         primary_window: Some(Window {
             title: "MVC MAIN MENU!".into(),
             name: Some("MVC".into()),
-            position:WindowPosition::At(IVec2{x:1,y:1}),
+            position: WindowPosition::At(IVec2 { x: 1, y: 1 }),
             resolution: (500., 750.).into(),
             // Tells Wasm to resize the window according to the available canvas
             fit_canvas_to_parent: true,
@@ -64,18 +66,21 @@ fn main() {
         ..default()
     }),));
     // set initial state
-    app.insert_state(AppState::OperationEnd);
-    app.insert_state(IsCapture::CaptureStop);
+    app.insert_state(AppState::MainMenu);
+    app.insert_state(OperationState::None);
     app.add_systems(Startup, menu);
     app.add_systems(
         Update,
         (
             file_drag_and_drop_system,
-            button_click_system.run_if(in_state(AppState::OperationEnd)),
-            keyboard_interact.run_if(in_state(AppState::OperationStart)),
+            button_click_system.run_if(in_state(AppState::MainMenu)),
+            keyboard_interact.run_if(in_state(AppState::OperationMode)),
             setup_ambient_light,
             track_active_window,
-            orbit_camera,
+            interactive_orbit_camera,
+            // TODO: this will only be run if in interactive, another camera update function will be add for
+            //       live preview and capture mode where user have no control over the orbit camera
+            // interactive_orbit_camera.run_if(in_state(OperationState::Interactive)),
             switch_state_on_window_event,
         ),
     );

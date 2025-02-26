@@ -1,17 +1,18 @@
-use std::path::Path;
-
 use bevy::prelude::*;
 
 use crate::{
-    components::{InteractiveMode, PathLabel, QuitButton},
+    components::{InteractiveMode, PathLabel},
     render::interactive,
     resource::{AssetPath, OperationWindowRelatedEntities},
-    states::AppState,
+    states::{AppState, OperationState},
+    utils::check_file,
 };
 
 const MENU_FONT_SIZE: f32 = 50.;
+const PATH_FONT_SIZE: f32 = 20.;
 const FONT_SIZE: f32 = 30.;
 
+// To render the Main Menu of MVC for user to interacte to begin operation and such...
 pub fn menu(mut commands: Commands, asset_server: Res<AssetServer>, path: Res<AssetPath>) {
     let font = asset_server.load("fonts/FiraSans-Bold.ttf");
 
@@ -30,7 +31,6 @@ pub fn menu(mut commands: Commands, asset_server: Res<AssetServer>, path: Res<As
             ..default()
         })
         .with_children(|parent| {
-            // horizontal scroll example
             parent
                 .spawn(Node {
                     width: Val::Percent(100.),
@@ -52,25 +52,24 @@ pub fn menu(mut commands: Commands, asset_server: Res<AssetServer>, path: Res<As
                         Label,
                     ));
 
+                    // to label the path to the 3d file to let user know which model will be render
                     parent.spawn((
                         Text::new(path.path.clone()),
                         Node {
                             top: Val::Px(20.),
-                            // horizontally center child text
                             justify_content: JustifyContent::Center,
-                            // vertically center child text
                             align_items: AlignItems::Center,
                             ..default()
                         },
                         TextFont {
                             font: font.clone(),
-                            font_size: FONT_SIZE,
+                            font_size: PATH_FONT_SIZE,
                             ..default()
                         },
                         PathLabel,
                     ));
 
-                    // spawn Relative Mode Button
+                    // Button to Start 3d render operation
                     parent
                         .spawn((
                             Button,
@@ -79,9 +78,7 @@ pub fn menu(mut commands: Commands, asset_server: Res<AssetServer>, path: Res<As
                                 height: Val::Px(50.0),
                                 padding: UiRect::all(Val::Px(10.0)),
                                 border: UiRect::all(Val::Px(2.0)),
-                                // horizontally center child text
                                 justify_content: JustifyContent::Center,
-                                // vertically center child text
                                 align_items: AlignItems::Center,
                                 ..default()
                             },
@@ -91,7 +88,7 @@ pub fn menu(mut commands: Commands, asset_server: Res<AssetServer>, path: Res<As
                             InteractiveMode,
                         ))
                         .with_child((
-                            Text::new("Interactive Mode"),
+                            Text::new("Render Model"),
                             TextFont {
                                 font: font.clone(),
                                 font_size: FONT_SIZE,
@@ -103,44 +100,42 @@ pub fn menu(mut commands: Commands, asset_server: Res<AssetServer>, path: Res<As
         });
 }
 
+// button click system to handle the entering of operation mode
 pub fn button_click_system(
     commands: Commands,
     asset_server: Res<AssetServer>,
-    mut path: ResMut<AssetPath>,
+    path: ResMut<AssetPath>,
     interactive_mode: Query<&Interaction, (Changed<Interaction>, With<InteractiveMode>)>,
-    quit_button: Query<&Interaction, (Changed<Interaction>, With<QuitButton>)>,
     mut query: Query<(&mut Text, &PathLabel)>,
     mut text_color_query: Query<(&mut TextColor, &PathLabel)>,
-    mut operationWindow: ResMut<OperationWindowRelatedEntities>,
-    mut state: ResMut<NextState<AppState>>,
+    operation_window: ResMut<OperationWindowRelatedEntities>,
+    mut app_state: ResMut<NextState<AppState>>,
+    mut operation_state: ResMut<NextState<OperationState>>,
 ) {
-    // Check Play button
+    // Check if the files and all were valid then enter window to render 3d model or warn user about invalid file
     if let Ok(Interaction::Pressed) = interactive_mode.get_single() {
-        println!("Enter Interactive Mode");
+        println!("Enter Opration Mode");
         let p = path.path.clone();
         println!("{}", p);
         if check_file(&p) {
-            state.set(AppState::OperationStart);
-            interactive(commands, asset_server, p, operationWindow);
+            interactive(commands, asset_server, p, operation_window);
+            app_state.set(AppState::OperationMode);
+            operation_state.set(OperationState::Interactive)
         } else {
             for (mut text, _) in &mut query {
-                text.0 = "Please Provide a valid file".to_string();
+                text.0 = "3d model asset: Please Provide a valid file".to_string();
             }
             for (mut text, _) in &mut text_color_query {
                 text.0 = Color::srgb(255., 0.0, 0.0);
             }
         }
     }
-
-    // Check Quit button
-    if let Ok(Interaction::Pressed) = quit_button.get_single() {
-        println!("Quit Button Pressed!");
-    }
 }
 
+// a drop file system to handle the load in of files through d & d
 pub fn file_drag_and_drop_system(
     mut events: EventReader<FileDragAndDrop>,
-    mut path: ResMut<AssetPath>,
+    mut three_d_model_asset_path: ResMut<AssetPath>,
     mut query: Query<(&mut Text, &PathLabel)>,
     mut text_color_query: Query<(&mut TextColor, &PathLabel)>,
 ) {
@@ -150,36 +145,23 @@ pub fn file_drag_and_drop_system(
                 "Dropped file with path: {:?}, in window id: {:?}",
                 path_buf, window
             );
-            path.path = path_buf.to_str().unwrap().to_string();
-            let p = path.path.clone();
+            three_d_model_asset_path.path = path_buf.to_str().unwrap().to_string();
+            let p = three_d_model_asset_path.path.clone();
             if !check_file(&p) {
                 for (mut text, _) in &mut query {
-                    text.0 = format!("{} is not a valid file", p.clone());
+                    text.0 = format!("3d model asset: {} is not a valid file", p.clone());
                 }
                 for (mut text, _) in &mut text_color_query {
                     text.0 = Color::srgb(255., 0.0, 0.0);
                 }
             } else {
                 for (mut text, _) in &mut query {
-                    text.0 = p.clone()
+                    text.0 = format!("3d model asset: {}", p.clone())
                 }
                 for (mut text, _) in &mut text_color_query {
                     text.0 = Color::srgb(255., 255., 255.);
                 }
             }
         }
-    }
-}
-
-fn check_file(file_path: &str) -> bool {
-    match Path::new(file_path).extension() {
-        Some(ext) => {
-            if ext == "glb" || ext == "gltf" {
-                return true;
-            } else {
-                return false;
-            }
-        }
-        None => false,
     }
 }

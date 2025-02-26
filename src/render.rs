@@ -1,18 +1,19 @@
 use bevy::{
-    input::mouse::{MouseMotion, MouseWheel}, prelude::*, render::camera::RenderTarget, state::state, window::{WindowRef, WindowResolution}
+    prelude::*,
+    render::camera::RenderTarget,
+    window::{WindowRef, WindowResolution},
 };
 
-use crate::{
-    capture::take_snapshot, components::OrbitCamera, resource::OperationWindowRelatedEntities,
-    states::IsCapture,
-};
+use crate::{components::OrbitCamera, resource::OperationWindowRelatedEntities};
 
+// this will be the function responsible to spawn a window for the 3d model to render in
 pub fn interactive(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     path: String,
-    mut operationWindow: ResMut<OperationWindowRelatedEntities>,
+    mut operation_window: ResMut<OperationWindowRelatedEntities>,
 ) {
+    // spawn a new window ( In MVC, there will be a maximum of 2 window at the same time, 1 for MVC main menu and the other will be for 3d model )
     let interac_window = commands
         .spawn(Window {
             title: "Interactive Mode".to_owned(),
@@ -21,27 +22,28 @@ pub fn interactive(
         })
         .id();
 
-    println!("interac_window: {:?}", interac_window);
-
+    // Spawn the camera for the 3d model window
     let interac_window_camera = commands
         .spawn((
             Camera3d::default(),
-            Transform::from_xyz(0.0, 1.0, 7.0).looking_at(Vec3::new(0.0, 0.0, 100.0), Vec3::Y),
+            Transform::from_xyz(0.0, 1.0, 2.5).looking_at(Vec3::new(0.0, 0.0, 100.0), Vec3::Y),
             EnvironmentMapLight {
                 diffuse_map: asset_server.load("pisa_diffuse_rgb9e5_zstd.ktx2"),
                 specular_map: asset_server.load("pisa_specular_rgb9e5_zstd.ktx2"),
                 intensity: 250.0,
                 ..default()
             },
+            // IMPORTANT, we need to tell the camera where to target
             Camera {
                 target: RenderTarget::Window(WindowRef::Entity(interac_window)),
-                hdr:true,
+                hdr: true,
                 ..default()
             },
         ))
+        // this will be relavent for use to control the orbiting of the model
         .insert(OrbitCamera {
-            window_id: interac_window.to_string(),
-            radius: 7.0,
+            window: interac_window,
+            radius: 2.5,
             yaw: 1.0,
             pitch: 0.0,
             is_dragging: false,
@@ -57,6 +59,7 @@ pub fn interactive(
         },))
         .id();
 
+    // spawn the 3d model
     let scene_entity = commands
         .spawn((SceneRoot(
             asset_server.load(GltfAssetLabel::Scene(0).from_asset(path.clone())),
@@ -70,7 +73,7 @@ pub fn interactive(
         ..default()
     };
 
-    let node_entiry = commands
+    let node_entity = commands
         .spawn((node, TargetCamera(interac_window_camera)))
         .id();
 
@@ -79,72 +82,15 @@ pub fn interactive(
         interac_window_camera,
         directional_light,
         scene_entity,
-        node_entiry,
+        node_entity,
     ];
-    operationWindow.window = Some(interac_window);
-    operationWindow.entitiesList = Some(entities_list)
+
+    // saving the entites to a list, so that we can easily despawn them when the window close
+    operation_window.window = Some(interac_window);
+    operation_window.entities_list = Some(entities_list)
 }
 
 // set the ambient light that is used for the scene
 pub fn setup_ambient_light(mut ambient_light: ResMut<AmbientLight>) {
     ambient_light.brightness = 300.0;
-}
-
-pub fn orbit_camera(
-    mut query: Query<(&mut Transform, &mut OrbitCamera)>,
-    buttons: Res<ButtonInput<MouseButton>>,
-    mut motion_evr: EventReader<MouseMotion>,
-    mut scroll_evr: EventReader<MouseWheel>,
-    captureState: Res<State<IsCapture>>,
-    commands: Commands,
-    counter: Local<u32>,
-    operationWindow: ResMut<OperationWindowRelatedEntities>,
-) {
-    let ordit_query = query.get_single_mut();
-
-    match ordit_query{
-        Ok((mut transform, mut orbit))=>{
-            // Handle left mouse button for drag
-            if buttons.just_pressed(MouseButton::Left) {
-                orbit.is_dragging = true;
-            }
-            if buttons.just_released(MouseButton::Left) {
-                orbit.is_dragging = false;
-            }
-
-            // Orbiting when dragging
-            if orbit.is_dragging {
-                for ev in motion_evr.read() {
-                    let sensitivity = 0.01;
-                    orbit.yaw -= ev.delta.x * sensitivity;
-                    orbit.pitch += ev.delta.y * sensitivity;
-
-                    // Clamp pitch to avoid flipping
-                    orbit.pitch = orbit.pitch.clamp(-1.5, 1.5);
-                }
-            }
-
-            // Zoom with scroll wheel
-            for ev in scroll_evr.read() {
-                orbit.radius -= ev.y * 0.5;
-                // orbit.radius = orbit.radius.clamp(2.0, 50.0);
-            }
-
-            // Calculate new camera position
-            let yaw_rot = Quat::from_rotation_y(orbit.yaw);
-            let pitch_rot = Quat::from_rotation_x(orbit.pitch);
-            let offset = yaw_rot * pitch_rot * Vec3::new(0.0, 0.0, orbit.radius);
-
-            transform.translation = Vec3::ZERO + offset;
-            transform.look_at(Vec3::ZERO, Vec3::Y);
-            let s = captureState.as_ref().get();
-            if *s == IsCapture::CaptureOngoing {
-                take_snapshot(commands, counter, operationWindow);
-            }
-            
-        },
-        Err(_)=>{
-            return;
-        }
-    }
 }
