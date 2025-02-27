@@ -6,9 +6,7 @@ use bevy::{
 };
 
 use crate::{
-    capture::take_snapshot,
-    resource::{ActiveWindowId, LiveCameraPanNumber, OperationWindowRelatedEntities},
-    states::{AppState, OperationState}, types::AppSettings,
+    capture::take_snapshot, components::OrbitCamera, resource::{ActiveWindowId, LiveCameraPanNumber, OperationSettings, OperationWindowRelatedEntities}, states::{AppState, OperationState}, types::AppSettings
 };
 
 pub fn check_model_file(file_path: &str) -> bool {
@@ -102,6 +100,8 @@ pub fn keyboard_interact(
     commands: Commands,
     counter: Local<u32>,
     operation_window: ResMut<OperationWindowRelatedEntities>,
+    query: Query<&OrbitCamera>,
+    mut operation_settings: ResMut<OperationSettings>,
 ) {
     let c_o_s = current_operation_state.as_ref().get();
     if *c_o_s == OperationState::LiveCapture {
@@ -121,6 +121,7 @@ pub fn keyboard_interact(
             operation_state.set(OperationState::Interactive);
         }
     } else if *c_o_s == OperationState::Interactive {
+        operation_settings.radius_start_position = query.get_single().unwrap().radius;
         if keys.just_pressed(KeyCode::Space) {
             println!("start live capturing");
             operation_state.set(OperationState::LiveCapture);
