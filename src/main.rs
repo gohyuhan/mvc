@@ -24,6 +24,9 @@ mod capture;
 mod camera;
 use camera::*;
 
+mod types;
+use types::*;
+
 // Note:
 // The keyboard command when in the interactive mode
 //
@@ -31,14 +34,17 @@ use camera::*;
 // L: enter or exit live preview mode
 // I: enter or exit interactive mode
 // space: enter or exit live capture mode
-// arrow key: move the model [ soon will be change to rotate model ]
-// wasd: move the camera
+// arrow key: rotate model
+// wasd: move the model
 // mouse wheel: zoom in or out
 // mouse left click and move: rotate the model
 
 
 fn main() {
-    let mut app = App::new();
+    // init the app setting
+    let app_settings: AppSettings = init_app();
+
+    let mut app: App = App::new();
     // set the resource
     app.insert_resource(DirectionalLightShadowMap { size: 4096 });
     app.insert_resource(AssetPath {
@@ -46,7 +52,9 @@ fn main() {
         skybox_path: "".to_string(),
     });
     app.insert_resource(SavePath {
-        path: "".to_string(),
+        dir_path: app_settings.image_save_dir,
+        dir_name: "".to_string(),
+        file_name_prefix: "".to_string(),
     });
     app.insert_resource(ActiveWindowId {
         id: "temp".to_string(),
@@ -62,6 +70,19 @@ fn main() {
         yaw: 1.0,
         pitch: 1.0,
         radius: 1.0,
+    });
+    app.insert_resource(OperationSettings {
+        yaw_min_value: app_settings.yaw_min_value,
+        yaw_max_value: app_settings.yaw_max_value,
+        pitch_min_value: app_settings.pitch_min_value,
+        pitch_max_value: app_settings.pitch_max_value,
+        radius_range: app_settings.radius_range,
+        radius_start_position: 2.5,
+        model_rotate_sensitivity: app_settings.model_rotate_sensitivity,
+        model_reposition_sensitivity: app_settings.model_reposition_sensitivity,
+        mouse_sensitivity: app_settings.mouse_sensitivity,
+        zoom_sensitivity: app_settings.zoom_sensitivity,
+        live_capture_iteration: app_settings.live_capture_iteration,
     });
     // set the plugins
     app.add_plugins((DefaultPlugins.set(WindowPlugin {
@@ -97,7 +118,7 @@ fn main() {
             file_drag_and_drop_system,
             button_click_system.run_if(in_state(AppState::MainMenu)),
             keyboard_interact.run_if(in_state(AppState::OperationMode)),
-            reposition_model.run_if(in_state(OperationState::Interactive)),
+            reposition_rotate_model.run_if(in_state(OperationState::Interactive)),
             setup_ambient_light,
             track_active_window,
             interactive_orbit_camera.run_if(in_state(AppState::OperationMode)),

@@ -6,9 +6,11 @@ use bevy::{
 use crate::{
     capture::take_snapshot,
     components::OrbitCamera,
-    resource::{LiveCameraPanNumber, OperationWindowRelatedEntities},
+    resource::{OperationSettings, LiveCameraPanNumber, OperationWindowRelatedEntities},
     states::OperationState,
 };
+
+
 
 // orbit camera that was control by user
 pub fn interactive_orbit_camera(
@@ -21,9 +23,9 @@ pub fn interactive_orbit_camera(
     commands: Commands,
     counter: Local<u32>,
     operation_window: ResMut<OperationWindowRelatedEntities>,
+    operation_settings: Res<OperationSettings>,
 ) {
     let orbit_query = query.get_single_mut();
-    const CAMERA_POSITION_SENSITIVITY: f32 = 0.001;
 
     match orbit_query {
         Ok((mut transform, mut orbit)) => {
@@ -39,7 +41,7 @@ pub fn interactive_orbit_camera(
                 // Orbiting when dragging
                 if orbit.is_dragging {
                     for ev in motion_evr.read() {
-                        let sensitivity = 0.0025;
+                        let sensitivity = operation_settings.mouse_sensitivity;
                         orbit.yaw -= ev.delta.x * sensitivity;
                         orbit.pitch += ev.delta.y * sensitivity;
 
@@ -50,8 +52,7 @@ pub fn interactive_orbit_camera(
 
                 // Zoom with scroll wheel
                 for ev in scroll_evr.read() {
-                    orbit.radius -= ev.y * 0.5;
-                    // orbit.radius = orbit.radius.clamp(2.0, 50.0);
+                    orbit.radius -= ev.y * operation_settings.zoom_sensitivity;
                 }
 
                 // Calculate new camera position
@@ -59,35 +60,8 @@ pub fn interactive_orbit_camera(
                 let pitch_rot = Quat::from_rotation_x(orbit.pitch);
                 let offset = yaw_rot * pitch_rot * Vec3::new(0.0, 0.0, orbit.radius);
 
-                // Reposition camera
-                if keys.just_pressed(KeyCode::KeyW) {
-                    println!(
-                        "Moved orbit camera upward by {}",
-                        CAMERA_POSITION_SENSITIVITY
-                    );
-                    orbit.position_y += CAMERA_POSITION_SENSITIVITY;
-                } else if keys.just_pressed(KeyCode::KeyS) {
-                    println!(
-                        "Moved orbit camera downward by {}",
-                        CAMERA_POSITION_SENSITIVITY
-                    );
-                    orbit.position_y -= CAMERA_POSITION_SENSITIVITY;
-                } else if keys.just_pressed(KeyCode::KeyD) {
-                    println!(
-                        "Moved orbit camera to the right by {}",
-                        CAMERA_POSITION_SENSITIVITY
-                    );
-                    orbit.position_x += CAMERA_POSITION_SENSITIVITY;
-                } else if keys.just_pressed(KeyCode::KeyA) {
-                    println!(
-                        "Moved orbit camera to the left by {}",
-                        CAMERA_POSITION_SENSITIVITY
-                    );
-                    orbit.position_x -= CAMERA_POSITION_SENSITIVITY;
-                }
-
-                transform.translation = Vec3::new(orbit.position_x, orbit.position_y, 0.0) + offset;
-                transform.look_at(Vec3::new(orbit.position_x, orbit.position_y, 0.0), Vec3::Y);
+                transform.translation = Vec3::ZERO + offset;
+                transform.look_at(Vec3::ZERO, Vec3::Y);
                 let c_o_s = current_operation_state.as_ref().get();
                 if *c_o_s == OperationState::LiveCapture {
                     take_snapshot(commands, counter, operation_window);
@@ -100,14 +74,21 @@ pub fn interactive_orbit_camera(
     }
 }
 
+
+const YAW_SENSITIVITY: f32 = 0.004;
+const PITCH_SENSITIVITY: f32 = 0.002;
+const ZOOM_SENSITIVITY: f32 = 0.002;
+
 // orbit camera that was control by system, user can't intefere when it was running
 pub fn live_orbit_camera(
     mut query: Query<(&mut Transform, &mut OrbitCamera)>,
     current_operation_state: Res<State<OperationState>>,
     mut live_camera_pan_number: ResMut<LiveCameraPanNumber>,
     operation_window: ResMut<OperationWindowRelatedEntities>,
+    operation_settings: Res<OperationSettings>,
 ) {
     let orbit_query = query.get_single_mut();
+
 
     match orbit_query {
         Ok((mut transform, mut orbit)) => {
@@ -115,30 +96,30 @@ pub fn live_orbit_camera(
             if orbit.window == operation_window.window.unwrap()
                 && *c_o_s == OperationState::LivePreview
             {
-                orbit.yaw += live_camera_pan_number.yaw * 0.002;
-                if orbit.yaw >= 0.75 {
-                    orbit.yaw = 0.75;
+                orbit.yaw += live_camera_pan_number.yaw * YAW_SENSITIVITY;
+                if orbit.yaw >= operation_settings.yaw_max_value {
+                    orbit.yaw = operation_settings.yaw_max_value;
                     live_camera_pan_number.yaw *= -1.0;
-                } else if orbit.yaw <= -0.75 {
-                    orbit.yaw = -0.75;
+                } else if orbit.yaw <= operation_settings.yaw_min_value {
+                    orbit.yaw = operation_settings.yaw_min_value;
                     live_camera_pan_number.yaw *= -1.0;
                 }
 
-                orbit.pitch += live_camera_pan_number.pitch * 0.001;
-                if orbit.pitch >= -0.25 {
-                    orbit.pitch = -0.25;
+                orbit.pitch += live_camera_pan_number.pitch * PITCH_SENSITIVITY;
+                if orbit.pitch >= operation_settings.pitch_max_value {
+                    orbit.pitch = operation_settings.pitch_max_value;
                     live_camera_pan_number.pitch *= -1.0;
-                } else if orbit.pitch <= -0.70 {
-                    orbit.pitch = -0.70;
+                } else if orbit.pitch <= operation_settings.pitch_min_value {
+                    orbit.pitch = operation_settings.pitch_min_value;
                     live_camera_pan_number.pitch *= -1.0;
                 }
 
-                orbit.radius += live_camera_pan_number.radius * 0.001;
-                if orbit.radius >= 7.0 {
-                    orbit.radius = 7.0;
+                orbit.radius += live_camera_pan_number.radius * ZOOM_SENSITIVITY;
+                if orbit.radius >= operation_settings.radius_start_position + operation_settings.radius_range {
+                    orbit.radius = operation_settings.radius_start_position + operation_settings.radius_range;
                     live_camera_pan_number.radius *= -1.0;
-                } else if orbit.radius <= 3.0 {
-                    orbit.radius = 3.0;
+                } else if orbit.radius <= operation_settings.radius_start_position - operation_settings.radius_range {
+                    orbit.radius = operation_settings.radius_start_position - operation_settings.radius_range;
                     live_camera_pan_number.radius *= -1.0;
                 }
 
@@ -147,8 +128,8 @@ pub fn live_orbit_camera(
                 let pitch_rot = Quat::from_rotation_x(orbit.pitch);
                 let offset = yaw_rot * pitch_rot * Vec3::new(0.0, 0.0, orbit.radius);
 
-                transform.translation = Vec3::new(orbit.position_x, orbit.position_y, 0.0) + offset;
-                transform.look_at(Vec3::new(orbit.position_x, orbit.position_y, 0.0), Vec3::Y);
+                transform.translation = Vec3::ZERO + offset;
+                transform.look_at(Vec3::ZERO, Vec3::Y);
             }
         }
         Err(_) => {

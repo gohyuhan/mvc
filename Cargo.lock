@@ -2827,6 +2827,8 @@ dependencies = [
  "accesskit",
  "bevy",
  "image",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
