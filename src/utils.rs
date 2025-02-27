@@ -144,8 +144,8 @@ pub fn init_app() -> AppSettings {
     const PITCH_MIN_VALUE: f32 = -0.60;
     const PITCH_MAX_VALUE: f32 = -0.20;
     const RADIUS_RANGE: f32 = 2.0;
-    const MODEL_ROTATE_SENSITIVITY:f32 = 0.001;
-    const MODEL_REPOSITION_SENSITIVITY: f32 = 0.01;
+    const MODEL_ROTATE_SENSITIVITY:f32 = 0.05;
+    const MODEL_REPOSITION_SENSITIVITY: f32 = 0.05;
     const MOUSE_SENSITIVITY: f32 = 0.0025;
     const ZOOM_SENSITIVITY: f32 = 0.25;
     const LIVE_CAPTURE_ITERATION: u32 = 5000;
