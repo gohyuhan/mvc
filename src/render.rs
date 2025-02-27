@@ -22,7 +22,7 @@ pub fn interactive(
     mut images: ResMut<Assets<Image>>,
     skybox_attributes: Res<SkyboxAttribute>,
     mut operation_window: ResMut<OperationWindowRelatedEntities>,
-    operation_settings: Res<OperationSettings> 
+    operation_settings: Res<OperationSettings>,
 ) {
     // spawn a new window ( In MVC, there will be a maximum of 2 window at the same time, 1 for MVC main menu and the other will be for 3d model )
     let interac_window = commands
@@ -51,7 +51,8 @@ pub fn interactive(
     let interac_window_camera = commands
         .spawn((
             Camera3d::default(),
-            Transform::from_xyz(0.0, 0.0, operation_settings.radius_start_position).looking_at(Vec3::new(0.0, 0.0, 0.0), Vec3::Y),
+            Transform::from_xyz(0.0, 0.0, operation_settings.radius_start_position)
+                .looking_at(Vec3::new(0.0, 0.0, 0.0), Vec3::Y),
             EnvironmentMapLight {
                 diffuse_map: asset_server.load("pisa_diffuse_rgb9e5_zstd.ktx2"),
                 specular_map: asset_server.load("pisa_specular_rgb9e5_zstd.ktx2"),
@@ -97,8 +98,8 @@ pub fn interactive(
             Transform::from_translation(Vec3::ZERO),
             ModelRotateReposition {
                 window: interac_window,
-                x:0.0,
-                y:0.0,
+                x: 0.0,
+                y: 0.0,
             },
         ))
         .id();
@@ -149,34 +150,58 @@ pub fn reposition_rotate_model(
                 if *c_o_s == OperationState::Interactive {
                     // rotate model
                     if keys.just_pressed(KeyCode::ArrowUp) {
-                        println!("Rotate model upward by {}", operation_settings.model_rotate_sensitivity);
+                        println!(
+                            "Rotate model upward by {}",
+                            operation_settings.model_rotate_sensitivity
+                        );
                         transform.rotate_local_x(-operation_settings.model_rotate_sensitivity);
                     } else if keys.just_pressed(KeyCode::ArrowDown) {
-                        println!("Rotate model downward by {}", operation_settings.model_rotate_sensitivity);
+                        println!(
+                            "Rotate model downward by {}",
+                            operation_settings.model_rotate_sensitivity
+                        );
                         transform.rotate_local_x(operation_settings.model_rotate_sensitivity);
                     } else if keys.just_pressed(KeyCode::ArrowRight) {
-                        println!("Rotate model to the right by {}", operation_settings.model_rotate_sensitivity);
+                        println!(
+                            "Rotate model to the right by {}",
+                            operation_settings.model_rotate_sensitivity
+                        );
                         transform.rotate_local_y(operation_settings.model_rotate_sensitivity);
                     } else if keys.just_pressed(KeyCode::ArrowLeft) {
-                        println!("Rotate model to the left by {}", operation_settings.model_rotate_sensitivity);
+                        println!(
+                            "Rotate model to the left by {}",
+                            operation_settings.model_rotate_sensitivity
+                        );
                         transform.rotate_local_y(-operation_settings.model_rotate_sensitivity);
                     }
 
                     // move model
                     if keys.just_pressed(KeyCode::KeyW) {
-                        println!("Moved model upward by {}", operation_settings.model_reposition_sensitivity);
+                        println!(
+                            "Moved model upward by {}",
+                            operation_settings.model_reposition_sensitivity
+                        );
                         model.y += operation_settings.model_reposition_sensitivity;
                         transform.translation.y = model.y;
                     } else if keys.just_pressed(KeyCode::KeyS) {
-                        println!("Moved model downward by {}", operation_settings.model_reposition_sensitivity);
+                        println!(
+                            "Moved model downward by {}",
+                            operation_settings.model_reposition_sensitivity
+                        );
                         model.y -= operation_settings.model_reposition_sensitivity;
                         transform.translation.y = model.y;
                     } else if keys.just_pressed(KeyCode::KeyD) {
-                        println!("Moved model to the right by {}", operation_settings.model_reposition_sensitivity);
+                        println!(
+                            "Moved model to the right by {}",
+                            operation_settings.model_reposition_sensitivity
+                        );
                         model.x += operation_settings.model_reposition_sensitivity;
                         transform.translation.x = model.x;
                     } else if keys.just_pressed(KeyCode::KeyA) {
-                        println!("Moved model to the left by {}", operation_settings.model_reposition_sensitivity);
+                        println!(
+                            "Moved model to the left by {}",
+                            operation_settings.model_reposition_sensitivity
+                        );
                         model.x -= operation_settings.model_reposition_sensitivity;
                         transform.translation.x = model.x;
                     }

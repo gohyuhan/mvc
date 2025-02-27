@@ -138,7 +138,7 @@ pub fn button_click_system(
         Query<(&mut TextColor, &ModelPathLabel)>,
         Query<(&mut TextColor, &SkyboxPathLabel)>,
     )>,
-    operation_settings: Res<OperationSettings> 
+    operation_settings: Res<OperationSettings>,
 ) {
     // Check if the files and all were valid then enter window to render 3d model or warn user about invalid file
     if let Ok(Interaction::Pressed) = interactive_mode.get_single() {
@@ -177,7 +177,7 @@ pub fn button_click_system(
                     images,
                     skybox_attributes,
                     operation_window,
-                    operation_settings
+                    operation_settings,
                 );
                 app_state.set(AppState::OperationMode);
                 operation_state.set(OperationState::Interactive)

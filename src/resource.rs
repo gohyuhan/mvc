@@ -18,11 +18,6 @@ pub struct SavePath {
 }
 
 #[derive(Resource)]
-pub struct ActiveWindowId {
-    pub id: String,
-}
-
-#[derive(Resource)]
 pub struct OperationWindowRelatedEntities {
     pub window: Option<Entity>,
     pub entities_list: Option<Vec<Entity>>,
@@ -52,5 +47,11 @@ pub struct OperationSettings {
     pub model_reposition_sensitivity: f32,
     pub mouse_sensitivity: f32,
     pub zoom_sensitivity: f32,
+}
+
+#[derive(Resource, Debug)]
+pub struct LiveCaptureOperationSettings {
     pub live_capture_iteration: u32,
+    pub live_capture_iteration_current_counter: u32,
+    pub live_capture_coordinate_list: Option<Vec<[f32; 3]>>,
 }

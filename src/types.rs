@@ -1,7 +1,7 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Serialize, Deserialize,)]
-pub struct AppSettings{
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AppSettings {
     pub image_save_dir: String,
     pub yaw_min_value: f32,
     pub yaw_max_value: f32,

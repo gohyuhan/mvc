@@ -39,7 +39,6 @@ use types::*;
 // mouse wheel: zoom in or out
 // mouse left click and move: rotate the model
 
-
 fn main() {
     // init the app setting
     let app_settings: AppSettings = init_app();
@@ -55,9 +54,6 @@ fn main() {
         dir_path: app_settings.image_save_dir,
         dir_name: "".to_string(),
         file_name_prefix: "".to_string(),
-    });
-    app.insert_resource(ActiveWindowId {
-        id: "temp".to_string(),
     });
     app.insert_resource(SkyboxAttribute {
         skybox_handler: None,
@@ -82,7 +78,11 @@ fn main() {
         model_reposition_sensitivity: app_settings.model_reposition_sensitivity,
         mouse_sensitivity: app_settings.mouse_sensitivity,
         zoom_sensitivity: app_settings.zoom_sensitivity,
+    });
+    app.insert_resource(LiveCaptureOperationSettings {
         live_capture_iteration: app_settings.live_capture_iteration,
+        live_capture_iteration_current_counter: 0,
+        live_capture_coordinate_list: None,
     });
     // set the plugins
     app.add_plugins((DefaultPlugins.set(WindowPlugin {
@@ -120,7 +120,6 @@ fn main() {
             keyboard_interact.run_if(in_state(AppState::OperationMode)),
             reposition_rotate_model.run_if(in_state(OperationState::Interactive)),
             setup_ambient_light,
-            track_active_window,
             interactive_orbit_camera.run_if(in_state(AppState::OperationMode)),
             live_orbit_camera.run_if(in_state(AppState::OperationMode)),
             switch_state_on_window_event,

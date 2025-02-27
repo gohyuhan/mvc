@@ -6,11 +6,9 @@ use bevy::{
 use crate::{
     capture::take_snapshot,
     components::OrbitCamera,
-    resource::{OperationSettings, LiveCameraPanNumber, OperationWindowRelatedEntities},
+    resource::{LiveCameraPanNumber, OperationSettings, OperationWindowRelatedEntities},
     states::OperationState,
 };
-
-
 
 // orbit camera that was control by user
 pub fn interactive_orbit_camera(
@@ -73,7 +71,6 @@ pub fn interactive_orbit_camera(
     }
 }
 
-
 const YAW_SENSITIVITY: f32 = 0.004;
 const PITCH_SENSITIVITY: f32 = 0.002;
 const ZOOM_SENSITIVITY: f32 = 0.002;
@@ -87,7 +84,6 @@ pub fn live_orbit_camera(
     operation_settings: Res<OperationSettings>,
 ) {
     let orbit_query = query.get_single_mut();
-
 
     match orbit_query {
         Ok((mut transform, mut orbit)) => {
@@ -114,11 +110,17 @@ pub fn live_orbit_camera(
                 }
 
                 orbit.radius += live_camera_pan_number.radius * ZOOM_SENSITIVITY;
-                if orbit.radius >= operation_settings.radius_start_position + operation_settings.radius_range {
-                    orbit.radius = operation_settings.radius_start_position + operation_settings.radius_range;
+                if orbit.radius
+                    >= operation_settings.radius_start_position + operation_settings.radius_range
+                {
+                    orbit.radius =
+                        operation_settings.radius_start_position + operation_settings.radius_range;
                     live_camera_pan_number.radius *= -1.0;
-                } else if orbit.radius <= operation_settings.radius_start_position - operation_settings.radius_range {
-                    orbit.radius = operation_settings.radius_start_position - operation_settings.radius_range;
+                } else if orbit.radius
+                    <= operation_settings.radius_start_position - operation_settings.radius_range
+                {
+                    orbit.radius =
+                        operation_settings.radius_start_position - operation_settings.radius_range;
                     live_camera_pan_number.radius *= -1.0;
                 }
 

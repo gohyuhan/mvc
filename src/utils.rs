@@ -1,12 +1,16 @@
-use std::{fs::{create_dir_all, File, OpenOptions}, path::{Path, PathBuf}};
-
-use bevy::{
-    prelude::*,
-    window::{WindowCloseRequested, WindowFocused},
+use std::{
+    fs::{create_dir_all, File, OpenOptions},
+    path::{Path, PathBuf},
 };
 
+use bevy::{prelude::*, window::WindowCloseRequested};
+
 use crate::{
-    capture::take_snapshot, components::OrbitCamera, resource::{ActiveWindowId, LiveCameraPanNumber, OperationSettings, OperationWindowRelatedEntities}, states::{AppState, OperationState}, types::AppSettings
+    capture::take_snapshot,
+    components::OrbitCamera,
+    resource::{LiveCameraPanNumber, OperationSettings, OperationWindowRelatedEntities},
+    states::{AppState, OperationState},
+    types::AppSettings,
 };
 
 pub fn check_model_file(file_path: &str) -> bool {
@@ -51,18 +55,6 @@ pub fn check_json_file(file_path: &str) -> bool {
             }
         }
         None => false,
-    }
-}
-
-pub fn track_active_window(
-    mut events: EventReader<WindowFocused>,
-    mut active_window_id: ResMut<ActiveWindowId>,
-) {
-    for event in events.read() {
-        if event.focused {
-            println!("Active window updated: {:?}", event.window);
-            active_window_id.id = format!("{:?}", event.window);
-        }
     }
 }
 
@@ -138,13 +130,16 @@ pub fn keyboard_interact(
 }
 
 pub fn init_app() -> AppSettings {
-    let image_save_dir = get_user_directory().join("Downloads").to_string_lossy().to_string();
+    let image_save_dir = get_user_directory()
+        .join("Downloads")
+        .to_string_lossy()
+        .to_string();
     const YAW_MIN_VALUE: f32 = -0.75;
-    const YAW_MAX_VALUE: f32 =  0.75;
+    const YAW_MAX_VALUE: f32 = 0.75;
     const PITCH_MIN_VALUE: f32 = -0.60;
     const PITCH_MAX_VALUE: f32 = -0.20;
     const RADIUS_RANGE: f32 = 2.0;
-    const MODEL_ROTATE_SENSITIVITY:f32 = 0.05;
+    const MODEL_ROTATE_SENSITIVITY: f32 = 0.05;
     const MODEL_REPOSITION_SENSITIVITY: f32 = 0.05;
     const MOUSE_SENSITIVITY: f32 = 0.0025;
     const ZOOM_SENSITIVITY: f32 = 0.25;
@@ -152,7 +147,7 @@ pub fn init_app() -> AppSettings {
 
     // check if there is a settings file, if not create it
     let settings_file_path = get_user_directory().join(".mvc/settings.json");
-    if !settings_file_path.exists(){
+    if !settings_file_path.exists() {
         let app_settings = AppSettings {
             image_save_dir: image_save_dir,
             yaw_min_value: YAW_MIN_VALUE,
@@ -169,10 +164,11 @@ pub fn init_app() -> AppSettings {
 
         create_file_with_dirs(settings_file_path.to_str().unwrap());
         let file = OpenOptions::new()
-        .write(true)
-        .create(true)  // Create the file if it doesn't exist
-        .truncate(true) // Truncate the file to ensure it's empty before writing
-        .open(settings_file_path).unwrap();
+            .write(true)
+            .create(true) // Create the file if it doesn't exist
+            .truncate(true) // Truncate the file to ensure it's empty before writing
+            .open(settings_file_path)
+            .unwrap();
 
         // write the data into the json file
         let _ = serde_json::to_writer(file, &app_settings);
@@ -182,11 +178,9 @@ pub fn init_app() -> AppSettings {
 
     // read the json file to configure the settings instead if it exist
     let file = File::open(settings_file_path).unwrap();
-    let json_setting:AppSettings = serde_json::from_reader(file).unwrap();
+    let json_setting: AppSettings = serde_json::from_reader(file).unwrap();
 
     return json_setting;
-
-    
 }
 
 fn get_user_directory() -> PathBuf {
