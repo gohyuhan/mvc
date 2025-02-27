@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::{fs::{create_dir_all, File, OpenOptions}, path::{Path, PathBuf}};
 
 use bevy::{
     prelude::*,
@@ -8,7 +8,7 @@ use bevy::{
 use crate::{
     capture::take_snapshot,
     resource::{ActiveWindowId, LiveCameraPanNumber, OperationWindowRelatedEntities},
-    states::{AppState, OperationState},
+    states::{AppState, OperationState}, types::AppSettings,
 };
 
 pub fn check_model_file(file_path: &str) -> bool {
@@ -134,4 +134,73 @@ pub fn keyboard_interact(
     if keys.just_pressed(KeyCode::KeyC) {
         take_snapshot(commands, counter, operation_window);
     }
+}
+
+pub fn init_app() -> AppSettings {
+    let image_save_dir = get_user_directory().join("Downloads").to_string_lossy().to_string();
+    const YAW_MIN_VALUE: f32 = -0.75;
+    const YAW_MAX_VALUE: f32 =  0.75;
+    const PITCH_MIN_VALUE: f32 = -0.60;
+    const PITCH_MAX_VALUE: f32 = -0.20;
+    const RADIUS_RANGE: f32 = 2.0;
+    const MODEL_ROTATE_SENSITIVITY:f32 = 0.001;
+    const MODEL_REPOSITION_SENSITIVITY: f32 = 0.01;
+    const MOUSE_SENSITIVITY: f32 = 0.0025;
+    const ZOOM_SENSITIVITY: f32 = 0.25;
+    const LIVE_CAPTURE_ITERATION: u32 = 5000;
+
+    // check if there is a settings file, if not create it
+    let settings_file_path = get_user_directory().join(".mvc/settings.json");
+    if !settings_file_path.exists(){
+        let app_settings = AppSettings {
+            image_save_dir: image_save_dir,
+            yaw_min_value: YAW_MIN_VALUE,
+            yaw_max_value: YAW_MAX_VALUE,
+            pitch_min_value: PITCH_MIN_VALUE,
+            pitch_max_value: PITCH_MAX_VALUE,
+            radius_range: RADIUS_RANGE,
+            model_rotate_sensitivity: MODEL_ROTATE_SENSITIVITY,
+            model_reposition_sensitivity: MODEL_REPOSITION_SENSITIVITY,
+            mouse_sensitivity: MOUSE_SENSITIVITY,
+            zoom_sensitivity: ZOOM_SENSITIVITY,
+            live_capture_iteration: LIVE_CAPTURE_ITERATION,
+        };
+
+        create_file_with_dirs(settings_file_path.to_str().unwrap());
+        let file = OpenOptions::new()
+        .write(true)
+        .create(true)  // Create the file if it doesn't exist
+        .truncate(true) // Truncate the file to ensure it's empty before writing
+        .open(settings_file_path).unwrap();
+
+        // write the data into the json file
+        let _ = serde_json::to_writer(file, &app_settings);
+
+        return app_settings;
+    }
+
+    // read the json file to configure the settings instead if it exist
+    let file = File::open(settings_file_path).unwrap();
+    let json_setting:AppSettings = serde_json::from_reader(file).unwrap();
+
+    return json_setting;
+
+    
+}
+
+fn get_user_directory() -> PathBuf {
+    let home_dir = if cfg!(unix) {
+        std::env::var("HOME").unwrap()
+    } else {
+        std::env::var("USERPROFILE").unwrap()
+    };
+
+    return PathBuf::from(home_dir);
+}
+
+fn create_file_with_dirs(path: &str) {
+    // Create all missing directories in the path
+    let _ = create_dir_all(std::path::Path::new(path).parent().unwrap());
+
+    File::create(path).unwrap();
 }
