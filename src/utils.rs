@@ -8,7 +8,10 @@ use bevy::{prelude::*, window::WindowCloseRequested};
 use crate::{
     capture::take_snapshot,
     components::OrbitCamera,
-    resource::{LiveCameraPanNumber, OperationSettings, OperationWindowRelatedEntities},
+    resource::{
+        LiveCameraPanNumber, LiveCaptureOperationSettings, OperationSettings,
+        OperationWindowRelatedEntities,
+    },
     states::{AppState, OperationState},
     types::AppSettings,
 };
@@ -94,6 +97,7 @@ pub fn keyboard_interact(
     operation_window: ResMut<OperationWindowRelatedEntities>,
     query: Query<&OrbitCamera>,
     mut operation_settings: ResMut<OperationSettings>,
+    mut live_capture_settings: ResMut<LiveCaptureOperationSettings>,
 ) {
     let c_o_s = current_operation_state.as_ref().get();
     if *c_o_s == OperationState::LiveCapture {
@@ -116,6 +120,25 @@ pub fn keyboard_interact(
         operation_settings.radius_start_position = query.get_single().unwrap().radius;
         if keys.just_pressed(KeyCode::Space) {
             println!("start live capturing");
+            let coordinates_list = generate_points(
+                live_capture_settings.live_capture_iteration,
+                (
+                    operation_settings.yaw_min_value,
+                    operation_settings.yaw_max_value,
+                ),
+                (
+                    operation_settings.pitch_min_value,
+                    operation_settings.pitch_max_value,
+                ),
+                (
+                    operation_settings.radius_start_position,
+                    operation_settings.radius_start_position + operation_settings.radius_range,
+                ),
+            );
+            println!("{:?}", coordinates_list);
+            live_capture_settings.live_capture_iteration = coordinates_list.len();
+            live_capture_settings.live_capture_coordinate_list = Some(coordinates_list);
+            live_capture_settings.live_capture_iteration_current_counter = 0;
             operation_state.set(OperationState::LiveCapture);
         } else if keys.just_pressed(KeyCode::KeyL) {
             println!("start live prviewing");
@@ -143,7 +166,7 @@ pub fn init_app() -> AppSettings {
     const MODEL_REPOSITION_SENSITIVITY: f32 = 0.05;
     const MOUSE_SENSITIVITY: f32 = 0.0025;
     const ZOOM_SENSITIVITY: f32 = 0.25;
-    const LIVE_CAPTURE_ITERATION: u32 = 5000;
+    const LIVE_CAPTURE_ITERATION: usize = 5000;
 
     // check if there is a settings file, if not create it
     let settings_file_path = get_user_directory().join(".mvc/settings.json");
@@ -198,4 +221,38 @@ fn create_file_with_dirs(path: &str) {
     let _ = create_dir_all(std::path::Path::new(path).parent().unwrap());
 
     File::create(path).unwrap();
+}
+
+// the following part was created with the help of AI, futher validation is needed
+
+// Generate the n-th term of a Halton sequence for a given base
+fn halton(index: u32, base: u32) -> f32 {
+    let mut result = 0.0;
+    let mut f = 1.0;
+    let mut i = index;
+
+    while i > 0 {
+        f /= base as f32;
+        result += f * (i % base) as f32;
+        i /= base;
+    }
+
+    return result;
+}
+
+// Generate 3D points within specified ranges using the Halton sequence
+fn generate_points(
+    count: usize,
+    x_range: (f32, f32),
+    y_range: (f32, f32),
+    z_range: (f32, f32),
+) -> Vec<(f32, f32, f32)> {
+    return (0..count)
+        .map(|i| {
+            let x = x_range.0 + (x_range.1 - x_range.0) * halton(i as u32 + 1, 2);
+            let y = y_range.0 + (y_range.1 - y_range.0) * halton(i as u32 + 1, 3);
+            let z = z_range.0 + (z_range.1 - z_range.0) * halton(i as u32 + 1, 5);
+            return (x, y, z);
+        })
+        .collect();
 }

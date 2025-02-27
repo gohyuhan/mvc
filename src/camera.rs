@@ -6,7 +6,10 @@ use bevy::{
 use crate::{
     capture::take_snapshot,
     components::OrbitCamera,
-    resource::{LiveCameraPanNumber, OperationSettings, OperationWindowRelatedEntities},
+    resource::{
+        LiveCameraPanNumber, LiveCaptureOperationSettings, OperationSettings,
+        OperationWindowRelatedEntities,
+    },
     states::OperationState,
 };
 
@@ -17,56 +20,54 @@ pub fn interactive_orbit_camera(
     mut motion_evr: EventReader<MouseMotion>,
     mut scroll_evr: EventReader<MouseWheel>,
     current_operation_state: Res<State<OperationState>>,
-    commands: Commands,
-    counter: Local<u32>,
     operation_window: ResMut<OperationWindowRelatedEntities>,
     operation_settings: Res<OperationSettings>,
 ) {
-    let orbit_query = query.get_single_mut();
+    let c_o_s = current_operation_state.as_ref().get();
+    if *c_o_s == OperationState::Interactive {
+        let orbit_query = query.get_single_mut();
 
-    match orbit_query {
-        Ok((mut transform, mut orbit)) => {
-            if orbit.window == operation_window.window.unwrap() {
-                // Handle left mouse button for drag
-                if buttons.just_pressed(MouseButton::Left) {
-                    orbit.is_dragging = true;
-                }
-                if buttons.just_released(MouseButton::Left) {
-                    orbit.is_dragging = false;
-                }
-
-                // Orbiting when dragging
-                if orbit.is_dragging {
-                    for ev in motion_evr.read() {
-                        let sensitivity = operation_settings.mouse_sensitivity;
-                        orbit.yaw -= ev.delta.x * sensitivity;
-                        orbit.pitch += ev.delta.y * sensitivity;
-
-                        // Clamp pitch to avoid flipping
-                        orbit.pitch = orbit.pitch.clamp(-1., 1.);
+        match orbit_query {
+            Ok((mut transform, mut orbit)) => {
+                if orbit.window == operation_window.window.unwrap() {
+                    // Handle left mouse button for drag
+                    if buttons.just_pressed(MouseButton::Left) {
+                        orbit.is_dragging = true;
                     }
-                }
+                    if buttons.just_released(MouseButton::Left) {
+                        orbit.is_dragging = false;
+                    }
 
-                // Zoom with scroll wheel
-                for ev in scroll_evr.read() {
-                    orbit.radius -= ev.y * operation_settings.zoom_sensitivity;
-                }
+                    // Orbiting when dragging
+                    if orbit.is_dragging {
+                        for ev in motion_evr.read() {
+                            let sensitivity = operation_settings.mouse_sensitivity;
+                            orbit.yaw -= ev.delta.x * sensitivity;
+                            orbit.pitch += ev.delta.y * sensitivity;
 
-                // Calculate new camera position
-                let yaw_rot = Quat::from_rotation_y(orbit.yaw);
-                let pitch_rot = Quat::from_rotation_x(orbit.pitch);
-                let offset = yaw_rot * pitch_rot * Vec3::new(0.0, 0.0, orbit.radius);
+                            // Clamp pitch to avoid flipping
+                            orbit.pitch = orbit.pitch.clamp(-1., 1.);
+                        }
+                        println!("orbit: {:?}", orbit);
+                    }
 
-                transform.translation = Vec3::ZERO + offset;
-                transform.look_at(Vec3::ZERO, Vec3::Y);
-                let c_o_s = current_operation_state.as_ref().get();
-                if *c_o_s == OperationState::LiveCapture {
-                    take_snapshot(commands, counter, operation_window);
+                    // Zoom with scroll wheel
+                    for ev in scroll_evr.read() {
+                        orbit.radius -= ev.y * operation_settings.zoom_sensitivity;
+                    }
+
+                    // Calculate new camera position
+                    let yaw_rot = Quat::from_rotation_y(orbit.yaw);
+                    let pitch_rot = Quat::from_rotation_x(orbit.pitch);
+                    let offset = yaw_rot * pitch_rot * Vec3::new(0.0, 0.0, orbit.radius);
+
+                    transform.translation = Vec3::ZERO + offset;
+                    transform.look_at(Vec3::ZERO, Vec3::Y);
                 }
             }
-        }
-        Err(_) => {
-            return;
+            Err(_) => {
+                return;
+            }
         }
     }
 }
@@ -75,12 +76,13 @@ const YAW_SENSITIVITY: f32 = 0.004;
 const PITCH_SENSITIVITY: f32 = 0.002;
 const ZOOM_SENSITIVITY: f32 = 0.002;
 
-// orbit camera that was control by system, user can't intefere when it was running
+// orbit camera that was control by system, user can't intefere when it was running [like orbiting using mouse],
+// will loop infinitly until exit live preview mode
 pub fn live_orbit_camera(
     mut query: Query<(&mut Transform, &mut OrbitCamera)>,
     current_operation_state: Res<State<OperationState>>,
     mut live_camera_pan_number: ResMut<LiveCameraPanNumber>,
-    operation_window: ResMut<OperationWindowRelatedEntities>,
+    operation_window: Res<OperationWindowRelatedEntities>,
     operation_settings: Res<OperationSettings>,
 ) {
     let orbit_query = query.get_single_mut();
@@ -131,6 +133,54 @@ pub fn live_orbit_camera(
 
                 transform.translation = Vec3::ZERO + offset;
                 transform.look_at(Vec3::ZERO, Vec3::Y);
+            }
+        }
+        Err(_) => {
+            return;
+        }
+    }
+}
+
+// camera that was control by the system that move to the coordinates that was calculated by fibonacci sphere and capture a screen shot
+// will end once it reach the end of the list and will switch to interactive mode once end
+pub fn live_capture_camera(
+    mut query: Query<(&mut Transform, &mut OrbitCamera)>,
+    mut operation_state: ResMut<NextState<OperationState>>,
+    current_operation_state: Res<State<OperationState>>,
+    operation_window: Res<OperationWindowRelatedEntities>,
+    mut live_capture_settings: ResMut<LiveCaptureOperationSettings>,
+) {
+    let orbit_query = query.get_single_mut();
+
+    match orbit_query {
+        Ok((mut transform, mut orbit)) => {
+            let c_o_s = current_operation_state.as_ref().get();
+            if orbit.window == operation_window.window.unwrap()
+                && *c_o_s == OperationState::LiveCapture
+            {
+                let current_coordinates = live_capture_settings
+                    .live_capture_coordinate_list
+                    .as_ref()
+                    .unwrap()
+                    [live_capture_settings.live_capture_iteration_current_counter as usize];
+                orbit.yaw = current_coordinates.0;
+                orbit.pitch = current_coordinates.1;
+                orbit.radius = current_coordinates.2;
+
+                // Calculate new camera position
+                let yaw_rot = Quat::from_rotation_y(orbit.yaw);
+                let pitch_rot = Quat::from_rotation_x(orbit.pitch);
+                let offset = yaw_rot * pitch_rot * Vec3::new(0.0, 0.0, orbit.radius);
+
+                transform.translation = Vec3::ZERO + offset;
+                transform.look_at(Vec3::ZERO, Vec3::Y);
+
+                live_capture_settings.live_capture_iteration_current_counter += 1;
+                if live_capture_settings.live_capture_iteration_current_counter
+                    >= live_capture_settings.live_capture_iteration
+                {
+                    operation_state.set(OperationState::Interactive);
+                }
             }
         }
         Err(_) => {

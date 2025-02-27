@@ -12,5 +12,5 @@ pub struct AppSettings {
     pub model_reposition_sensitivity: f32,
     pub mouse_sensitivity: f32,
     pub zoom_sensitivity: f32,
-    pub live_capture_iteration: u32,
+    pub live_capture_iteration: usize,
 }

@@ -51,7 +51,7 @@ pub struct OperationSettings {
 
 #[derive(Resource, Debug)]
 pub struct LiveCaptureOperationSettings {
-    pub live_capture_iteration: u32,
-    pub live_capture_iteration_current_counter: u32,
-    pub live_capture_coordinate_list: Option<Vec<[f32; 3]>>,
+    pub live_capture_iteration: usize,
+    pub live_capture_iteration_current_counter: usize,
+    pub live_capture_coordinate_list: Option<Vec<(f32, f32, f32)>>,
 }
