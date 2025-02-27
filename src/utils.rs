@@ -140,8 +140,8 @@ pub fn init_app() -> AppSettings {
     let image_save_dir = get_user_directory().join("Downloads").to_string_lossy().to_string();
     const YAW_MIN_VALUE: f32 = -0.75;
     const YAW_MAX_VALUE: f32 =  0.75;
-    const PITCH_MIN_VALUE: f32 = -0.20;
-    const PITCH_MAX_VALUE: f32 = -0.60;
+    const PITCH_MIN_VALUE: f32 = -0.60;
+    const PITCH_MAX_VALUE: f32 = -0.20;
     const RADIUS_RANGE: f32 = 2.0;
     const MODEL_ROTATE_SENSITIVITY:f32 = 0.001;
     const MODEL_REPOSITION_SENSITIVITY: f32 = 0.01;

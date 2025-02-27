@@ -18,7 +18,6 @@ pub fn interactive_orbit_camera(
     buttons: Res<ButtonInput<MouseButton>>,
     mut motion_evr: EventReader<MouseMotion>,
     mut scroll_evr: EventReader<MouseWheel>,
-    keys: Res<ButtonInput<KeyCode>>,
     current_operation_state: Res<State<OperationState>>,
     commands: Commands,
     counter: Local<u32>,
