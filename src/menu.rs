@@ -1,11 +1,19 @@
-use std::{fs::{File, OpenOptions}, path::PathBuf};
+use std::{
+    fs::{File, OpenOptions},
+    path::PathBuf,
+};
 
 use bevy::prelude::*;
 
 use crate::{
-    components::{InteractiveMode, ModelPathLabel, SkyboxPathLabel}, render::interactive, resource::{
+    components::{InteractiveMode, ModelPathLabel, SkyboxPathLabel},
+    render::interactive,
+    resource::{
         AssetPath, OperationSettings, OperationWindowRelatedEntities, SavePath, SkyboxAttribute,
-    }, states::{AppState, OperationState}, types::AppSettings, utils::{check_json_file, check_model_file, check_skybox_file, get_user_directory}
+    },
+    states::{AppState, OperationState},
+    types::AppSettings,
+    utils::{check_json_file, check_model_file, check_skybox_file, get_user_directory},
 };
 
 const MENU_FONT_SIZE: f32 = 50.;
@@ -16,7 +24,7 @@ const FONT_SIZE: f32 = 30.;
 pub fn menu(mut commands: Commands, asset_server: Res<AssetServer>) {
     // load the font from embedded resource
     let font = asset_server.load("embedded://mvc/assets/fonts/FiraSans-Bold.ttf");
-    
+
     // Camera
     commands.spawn(Camera2d);
 

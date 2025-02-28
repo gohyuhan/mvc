@@ -3,7 +3,10 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use bevy::{prelude::*, window::{PrimaryWindow, WindowCloseRequested}};
+use bevy::{
+    prelude::*,
+    window::{PrimaryWindow, WindowCloseRequested},
+};
 
 use crate::{
     capture::take_snapshot,
@@ -72,14 +75,16 @@ pub fn switch_state_on_window_event(
     mut live_camera_pan_number: ResMut<LiveCameraPanNumber>,
 ) {
     for ev in window_close_requested_events.read() {
-        if ev.window == operation_window.window.unwrap() {
-            app_state.set(AppState::MainMenu);
-            operation_state.set(OperationState::None);
-            live_camera_pan_number.yaw = 1.0;
-            live_camera_pan_number.pitch = 1.0;
-            live_camera_pan_number.radius = 1.0;
-            for entity in operation_window.entities_list.as_mut().unwrap() {
-                commands.entity(*entity).despawn_recursive();
+        if let Some(op_window) = operation_window.window {
+            if ev.window == op_window {
+                app_state.set(AppState::MainMenu);
+                operation_state.set(OperationState::None);
+                live_camera_pan_number.yaw = 1.0;
+                live_camera_pan_number.pitch = 1.0;
+                live_camera_pan_number.radius = 1.0;
+                for entity in operation_window.entities_list.as_mut().unwrap() {
+                    commands.entity(*entity).despawn_recursive();
+                }
             }
         }
     }
@@ -161,8 +166,12 @@ pub fn keyboard_interact(
             // init the directory to save the snapshot
             snapshot_directory_init(save_settings.clone());
             for mut window in window_query.iter_mut() {
-                window.title = format!("Live Capturing 🎥 [{}/{}]", live_capture_settings.live_capture_iteration_current_counter, live_capture_settings.live_capture_iteration);
-            }
+                window.title = format!(
+                    "Live Capturing 🎥 [{}/{}]",
+                    live_capture_settings.live_capture_iteration_current_counter,
+                    live_capture_settings.live_capture_iteration
+                );
+r            }
             operation_state.set(OperationState::LiveCapture);
         } else if keys.just_pressed(KeyCode::KeyL) {
             println!("start live prviewing");

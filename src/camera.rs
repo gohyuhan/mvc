@@ -1,6 +1,7 @@
 use bevy::{
     input::mouse::{MouseMotion, MouseWheel},
-    prelude::*, window::PrimaryWindow,
+    prelude::*,
+    window::PrimaryWindow,
 };
 
 use crate::{
@@ -168,11 +169,15 @@ pub fn live_capture_camera(
 
             live_capture_settings.live_capture_iteration_current_counter += 1;
             for mut window in window_query.iter_mut() {
-                window.title = format!("Live Capturing 🎥 [{}/{}]", live_capture_settings.live_capture_iteration_current_counter, live_capture_settings.live_capture_iteration);
+                window.title = format!(
+                    "Live Capturing 🎥 [{}/{}]",
+                    live_capture_settings.live_capture_iteration_current_counter,
+                    live_capture_settings.live_capture_iteration
+                );
             }
             if live_capture_settings.live_capture_iteration_current_counter
                 >= live_capture_settings.live_capture_iteration
-            {   
+            {
                 operation_state.set(OperationState::Interactive);
                 for mut window in window_query.iter_mut() {
                     window.title = "Interactive 📱".to_string();

@@ -1,9 +1,11 @@
-
 use bevy::{
-    core_pipeline::Skybox, prelude::*, render::{
+    core_pipeline::Skybox,
+    prelude::*,
+    render::{
         camera::RenderTarget,
         render_resource::{TextureViewDescriptor, TextureViewDimension},
-    }, window::{WindowRef, WindowResolution}
+    },
+    window::{WindowRef, WindowResolution},
 };
 
 use crate::{
@@ -53,8 +55,10 @@ pub fn interactive(
             Transform::from_xyz(0.0, 0.0, operation_settings.radius_start_position)
                 .looking_at(Vec3::new(0.0, 0.0, 0.0), Vec3::Y),
             EnvironmentMapLight {
-                diffuse_map: asset_server.load("embedded://mvc/assets/pisa_diffuse_rgb9e5_zstd.ktx2"), // load the environment map light from embedded resource
-                specular_map: asset_server.load("embedded://mvc/assets/pisa_diffuse_rgb9e5_zstd.ktx2"), // load the environment map light from embedded resource
+                diffuse_map: asset_server
+                    .load("embedded://mvc/assets/pisa_diffuse_rgb9e5_zstd.ktx2"), // load the environment map light from embedded resource
+                specular_map: asset_server
+                    .load("embedded://mvc/assets/pisa_diffuse_rgb9e5_zstd.ktx2"), // load the environment map light from embedded resource
                 intensity: 250.0,
                 ..default()
             },
