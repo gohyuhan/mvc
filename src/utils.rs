@@ -171,7 +171,7 @@ pub fn keyboard_interact(
                     live_capture_settings.live_capture_iteration_current_counter,
                     live_capture_settings.live_capture_iteration
                 );
-r            }
+            }
             operation_state.set(OperationState::LiveCapture);
         } else if keys.just_pressed(KeyCode::KeyL) {
             println!("start live prviewing");
