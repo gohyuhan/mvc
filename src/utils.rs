@@ -3,7 +3,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use bevy::{prelude::*, window::WindowCloseRequested};
+use bevy::{prelude::*, window::{PrimaryWindow, WindowCloseRequested}};
 
 use crate::{
     capture::take_snapshot,
@@ -98,6 +98,7 @@ pub fn keyboard_interact(
     mut operation_settings: ResMut<OperationSettings>,
     mut live_capture_settings: ResMut<LiveCaptureOperationSettings>,
     save_settings: Res<SavePath>,
+    mut window_query: Query<&mut Window, Without<PrimaryWindow>>,
 ) {
     let c_o_s = current_operation_state.as_ref().get();
     let orbit_camera = query.get_single().unwrap();
@@ -106,17 +107,29 @@ pub fn keyboard_interact(
         if keys.just_pressed(KeyCode::Space) {
             println!("stop live capturing");
             operation_state.set(OperationState::Interactive);
+            for mut window in window_query.iter_mut() {
+                window.title = "Interactive 📱".to_string();
+            }
         } else if keys.just_pressed(KeyCode::KeyI) {
             println!("stop live capturing");
             operation_state.set(OperationState::Interactive);
+            for mut window in window_query.iter_mut() {
+                window.title = "Interactive 📱".to_string();
+            }
         }
     } else if *c_o_s == OperationState::LivePreview {
         if keys.just_pressed(KeyCode::KeyL) {
             println!("stop live prviewing");
             operation_state.set(OperationState::Interactive);
+            for mut window in window_query.iter_mut() {
+                window.title = "Interactive 📱".to_string();
+            }
         } else if keys.just_pressed(KeyCode::KeyI) {
             println!("stop live prviewing");
             operation_state.set(OperationState::Interactive);
+            for mut window in window_query.iter_mut() {
+                window.title = "Interactive 📱".to_string();
+            }
         }
     } else if *c_o_s == OperationState::Interactive {
         operation_settings.radius_start_position = orbit_camera.radius;
@@ -147,10 +160,15 @@ pub fn keyboard_interact(
 
             // init the directory to save the snapshot
             snapshot_directory_init(save_settings.clone());
-
+            for mut window in window_query.iter_mut() {
+                window.title = format!("Live Capturing 🎥 [{}/{}]", live_capture_settings.live_capture_iteration_current_counter, live_capture_settings.live_capture_iteration);
+            }
             operation_state.set(OperationState::LiveCapture);
         } else if keys.just_pressed(KeyCode::KeyL) {
             println!("start live prviewing");
+            for mut window in window_query.iter_mut() {
+                window.title = "Live Preview 🎬".to_string();
+            }
             operation_state.set(OperationState::LivePreview);
         }
     }
@@ -223,7 +241,7 @@ pub fn init_app() -> AppSettings {
     return json_setting;
 }
 
-fn get_user_directory() -> PathBuf {
+pub fn get_user_directory() -> PathBuf {
     let home_dir = if cfg!(unix) {
         std::env::var("HOME").unwrap()
     } else {

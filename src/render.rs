@@ -1,11 +1,9 @@
+
 use bevy::{
-    core_pipeline::Skybox,
-    prelude::*,
-    render::{
+    core_pipeline::Skybox, prelude::*, render::{
         camera::RenderTarget,
         render_resource::{TextureViewDescriptor, TextureViewDimension},
-    },
-    window::{WindowRef, WindowResolution},
+    }, window::{WindowRef, WindowResolution}
 };
 
 use crate::{
@@ -27,7 +25,7 @@ pub fn interactive(
     // spawn a new window ( In MVC, there will be a maximum of 2 window at the same time, 1 for MVC main menu and the other will be for 3d model )
     let interac_window = commands
         .spawn(Window {
-            title: "Interactive 📱".to_owned(),
+            title: "Interactive 📱".to_string(),
             resolution: WindowResolution::new(1280., 720.),
             position: WindowPosition::At(IVec2::new(300, 0)),
             ..default()
@@ -55,8 +53,8 @@ pub fn interactive(
             Transform::from_xyz(0.0, 0.0, operation_settings.radius_start_position)
                 .looking_at(Vec3::new(0.0, 0.0, 0.0), Vec3::Y),
             EnvironmentMapLight {
-                diffuse_map: asset_server.load("pisa_diffuse_rgb9e5_zstd.ktx2"),
-                specular_map: asset_server.load("pisa_specular_rgb9e5_zstd.ktx2"),
+                diffuse_map: asset_server.load("embedded://mvc/assets/pisa_diffuse_rgb9e5_zstd.ktx2"), // load the environment map light from embedded resource
+                specular_map: asset_server.load("embedded://mvc/assets/pisa_diffuse_rgb9e5_zstd.ktx2"), // load the environment map light from embedded resource
                 intensity: 250.0,
                 ..default()
             },

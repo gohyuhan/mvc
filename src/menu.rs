@@ -1,15 +1,11 @@
-use std::path::PathBuf;
+use std::{fs::{File, OpenOptions}, path::PathBuf};
 
 use bevy::prelude::*;
 
 use crate::{
-    components::{InteractiveMode, ModelPathLabel, SkyboxPathLabel},
-    render::interactive,
-    resource::{
+    components::{InteractiveMode, ModelPathLabel, SkyboxPathLabel}, render::interactive, resource::{
         AssetPath, OperationSettings, OperationWindowRelatedEntities, SavePath, SkyboxAttribute,
-    },
-    states::{AppState, OperationState},
-    utils::{check_json_file, check_model_file, check_skybox_file},
+    }, states::{AppState, OperationState}, types::AppSettings, utils::{check_json_file, check_model_file, check_skybox_file, get_user_directory}
 };
 
 const MENU_FONT_SIZE: f32 = 50.;
@@ -18,8 +14,9 @@ const FONT_SIZE: f32 = 30.;
 
 // To render the Main Menu of MVC for user to interacte to begin operation and such...
 pub fn menu(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let font = asset_server.load("fonts/FiraSans-Bold.ttf");
-
+    // load the font from embedded resource
+    let font = asset_server.load("embedded://mvc/assets/fonts/FiraSans-Bold.ttf");
+    
     // Camera
     commands.spawn(Camera2d);
 
@@ -148,7 +145,6 @@ pub fn button_click_system(
     if let Ok(Interaction::Pressed) = interactive_mode.get_single() {
         println!("Enter Opration Mode");
         let a_p = asset_path.clone();
-        println!("{:?}", a_p);
         let mut proceed = true;
         if !check_model_file(&a_p.model_path) {
             for (mut text, _) in path_label_param_set.p0().iter_mut() {
@@ -250,7 +246,17 @@ pub fn file_drag_and_drop_system(
                     text.0 = Color::srgb(255., 255., 255.);
                 }
             } else if check_json_file(&p) {
-                // json file was used to make setting configuration that will be add in the future
+                let file = OpenOptions::new()
+                    .write(true)
+                    .create(true) // Create the file if it doesn't exist
+                    .truncate(true) // Truncate the file to ensure it's empty before writing
+                    .open(get_user_directory().join(".mvc/settings.json"))
+                    .unwrap();
+
+                let new_json_file = File::open(&p).unwrap();
+                let new_json_setting: AppSettings = serde_json::from_reader(new_json_file).unwrap();
+
+                serde_json::to_writer(file, &new_json_setting).unwrap();
             }
         }
     }
