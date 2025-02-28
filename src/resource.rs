@@ -10,10 +10,10 @@ pub struct AssetPath {
     pub skybox_path: String,
 }
 
-#[derive(Resource, Debug)]
+#[derive(Resource, Debug, Clone)]
 pub struct SavePath {
-    pub dir_path: String,
-    pub dir_name: String,
+    pub base_dir_path: String,
+    pub current_dir_path: String,
     pub file_name_prefix: String,
 }
 
@@ -53,5 +53,5 @@ pub struct OperationSettings {
 pub struct LiveCaptureOperationSettings {
     pub live_capture_iteration: usize,
     pub live_capture_iteration_current_counter: usize,
-    pub live_capture_coordinate_list: Option<Vec<(f32, f32, f32)>>,
+    pub live_capture_coordinate_list: Vec<(f32, f32, f32)>,
 }

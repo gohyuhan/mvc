@@ -10,7 +10,7 @@ use crate::{
     components::OrbitCamera,
     resource::{
         LiveCameraPanNumber, LiveCaptureOperationSettings, OperationSettings,
-        OperationWindowRelatedEntities,
+        OperationWindowRelatedEntities, SavePath,
     },
     states::{AppState, OperationState},
     types::AppSettings,
@@ -93,13 +93,15 @@ pub fn keyboard_interact(
 
     // to pass to take_snapshot function
     commands: Commands,
-    counter: Local<u32>,
-    operation_window: ResMut<OperationWindowRelatedEntities>,
+    operation_window: Res<OperationWindowRelatedEntities>,
     query: Query<&OrbitCamera>,
     mut operation_settings: ResMut<OperationSettings>,
     mut live_capture_settings: ResMut<LiveCaptureOperationSettings>,
+    save_settings: Res<SavePath>,
 ) {
     let c_o_s = current_operation_state.as_ref().get();
+    let orbit_camera = query.get_single().unwrap();
+
     if *c_o_s == OperationState::LiveCapture {
         if keys.just_pressed(KeyCode::Space) {
             println!("stop live capturing");
@@ -117,9 +119,11 @@ pub fn keyboard_interact(
             operation_state.set(OperationState::Interactive);
         }
     } else if *c_o_s == OperationState::Interactive {
-        operation_settings.radius_start_position = query.get_single().unwrap().radius;
+        operation_settings.radius_start_position = orbit_camera.radius;
         if keys.just_pressed(KeyCode::Space) {
             println!("start live capturing");
+
+            // generate the evenly distributed coordinates
             let coordinates_list = generate_points(
                 live_capture_settings.live_capture_iteration,
                 (
@@ -135,10 +139,15 @@ pub fn keyboard_interact(
                     operation_settings.radius_start_position + operation_settings.radius_range,
                 ),
             );
-            println!("{:?}", coordinates_list);
+
+            // set the live capture settings
             live_capture_settings.live_capture_iteration = coordinates_list.len();
-            live_capture_settings.live_capture_coordinate_list = Some(coordinates_list);
+            live_capture_settings.live_capture_coordinate_list = coordinates_list;
             live_capture_settings.live_capture_iteration_current_counter = 0;
+
+            // init the directory to save the snapshot
+            snapshot_directory_init(save_settings.clone());
+
             operation_state.set(OperationState::LiveCapture);
         } else if keys.just_pressed(KeyCode::KeyL) {
             println!("start live prviewing");
@@ -148,7 +157,15 @@ pub fn keyboard_interact(
 
     // no matter the operation state, when key c is press capture 1 copy of current model snapshot
     if keys.just_pressed(KeyCode::KeyC) {
-        take_snapshot(commands, counter, operation_window);
+        snapshot_directory_init(save_settings.clone());
+        take_snapshot(
+            commands,
+            operation_window,
+            &save_settings,
+            orbit_camera.yaw,
+            orbit_camera.pitch,
+            orbit_camera.radius,
+        );
     }
 }
 
@@ -223,8 +240,6 @@ fn create_file_with_dirs(path: &str) {
     File::create(path).unwrap();
 }
 
-// the following part was created with the help of AI, futher validation is needed
-
 // Generate the n-th term of a Halton sequence for a given base
 fn halton(index: u32, base: u32) -> f32 {
     let mut result = 0.0;
@@ -255,4 +270,11 @@ fn generate_points(
             return (x, y, z);
         })
         .collect();
+}
+
+fn snapshot_directory_init(save_settings: SavePath) {
+    let snapshot_path = Path::new(&save_settings.current_dir_path);
+    if !snapshot_path.exists() {
+        create_dir_all(&snapshot_path).unwrap();
+    }
 }

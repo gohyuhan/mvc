@@ -51,8 +51,8 @@ fn main() {
         skybox_path: "".to_string(),
     });
     app.insert_resource(SavePath {
-        dir_path: app_settings.image_save_dir,
-        dir_name: "".to_string(),
+        base_dir_path: app_settings.image_save_dir,
+        current_dir_path: "".to_string(),
         file_name_prefix: "".to_string(),
     });
     app.insert_resource(SkyboxAttribute {
@@ -79,18 +79,19 @@ fn main() {
         mouse_sensitivity: app_settings.mouse_sensitivity,
         zoom_sensitivity: app_settings.zoom_sensitivity,
     });
+
     app.insert_resource(LiveCaptureOperationSettings {
         live_capture_iteration: app_settings.live_capture_iteration,
         live_capture_iteration_current_counter: 0,
-        live_capture_coordinate_list: None,
+        live_capture_coordinate_list: vec![(0., 0., 0.)],
     });
     // set the plugins
     app.add_plugins((DefaultPlugins.set(WindowPlugin {
         primary_window: Some(Window {
-            title: "MVC MAIN MENU!".into(),
+            title: "MVC MAIN MENU 💻!".into(),
             name: Some("MVC".into()),
             position: WindowPosition::At(IVec2 { x: 1, y: 1 }),
-            resolution: (500., 750.).into(),
+            resolution: (500., 800.).into(),
             // Tells Wasm to resize the window according to the available canvas
             fit_canvas_to_parent: true,
             // Tells Wasm not to override default event handling, like F5, Ctrl+R etc.
@@ -115,14 +116,22 @@ fn main() {
     app.add_systems(
         Update,
         (
-            file_drag_and_drop_system,
+            file_drag_and_drop_system.run_if(in_state(AppState::MainMenu)),
             button_click_system.run_if(in_state(AppState::MainMenu)),
             keyboard_interact.run_if(in_state(AppState::OperationMode)),
-            live_capture_camera.run_if(in_state(AppState::OperationMode)),
-            reposition_rotate_model.run_if(in_state(OperationState::Interactive)),
-            interactive_orbit_camera.run_if(in_state(AppState::OperationMode)),
-            live_orbit_camera.run_if(in_state(AppState::OperationMode)),
-            setup_ambient_light,
+            live_capture_camera.run_if(
+                in_state(AppState::OperationMode).and(in_state(OperationState::LiveCapture)),
+            ),
+            reposition_rotate_model.run_if(
+                in_state(AppState::OperationMode).and(in_state(OperationState::Interactive)),
+            ),
+            interactive_orbit_camera.run_if(
+                in_state(AppState::OperationMode).and(in_state(OperationState::Interactive)),
+            ),
+            live_orbit_camera.run_if(
+                in_state(AppState::OperationMode).and(in_state(OperationState::LivePreview)),
+            ),
+            setup_ambient_light.run_if(in_state(AppState::OperationMode)),
             switch_state_on_window_event,
         ),
     );

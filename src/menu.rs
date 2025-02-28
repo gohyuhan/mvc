@@ -1,9 +1,13 @@
+use std::path::PathBuf;
+
 use bevy::prelude::*;
 
 use crate::{
     components::{InteractiveMode, ModelPathLabel, SkyboxPathLabel},
     render::interactive,
-    resource::{AssetPath, OperationSettings, OperationWindowRelatedEntities, SkyboxAttribute},
+    resource::{
+        AssetPath, OperationSettings, OperationWindowRelatedEntities, SavePath, SkyboxAttribute,
+    },
     states::{AppState, OperationState},
     utils::{check_json_file, check_model_file, check_skybox_file},
 };
@@ -202,6 +206,7 @@ pub fn file_drag_and_drop_system(
         Query<(&mut TextColor, &ModelPathLabel)>,
         Query<(&mut TextColor, &SkyboxPathLabel)>,
     )>,
+    mut save_settings: ResMut<SavePath>,
 ) {
     for event in events.read() {
         if let FileDragAndDrop::DroppedFile { window, path_buf } = event {
@@ -212,8 +217,16 @@ pub fn file_drag_and_drop_system(
             let p = path_buf.to_str().unwrap().to_string();
 
             if check_model_file(&p) {
-                // to check if model file then save the path
+                // to check if model file then save the path, the directory name and file prefix
                 three_d_model_asset_path.model_path = path_buf.to_str().unwrap().to_string();
+                let filename = path_buf.file_stem().unwrap().to_str().unwrap().to_string();
+                save_settings.current_dir_path = PathBuf::from(&save_settings.base_dir_path)
+                    .join(&filename)
+                    .to_str()
+                    .unwrap()
+                    .to_string();
+                save_settings.file_name_prefix = filename;
+
                 for (mut text, _) in &mut path_label_param_set.p0().iter_mut() {
                     text.0 = format!("[3d model asset]: {}", p.clone())
                 }
