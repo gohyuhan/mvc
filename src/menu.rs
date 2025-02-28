@@ -9,7 +9,8 @@ use crate::{
     components::{InteractiveMode, ModelPathLabel, SkyboxPathLabel},
     render::interactive,
     resource::{
-        AssetPath, OperationSettings, OperationWindowRelatedEntities, SavePath, SkyboxAttribute,
+        AssetPath, LiveCaptureOperationSettings, OperationSettings, OperationWindowRelatedEntities,
+        SavePath, SkyboxAttribute,
     },
     states::{AppState, OperationState},
     types::AppSettings,
@@ -211,6 +212,8 @@ pub fn file_drag_and_drop_system(
         Query<(&mut TextColor, &SkyboxPathLabel)>,
     )>,
     mut save_settings: ResMut<SavePath>,
+    mut operation_settings: ResMut<OperationSettings>,
+    mut live_capture_settings: ResMut<LiveCaptureOperationSettings>,
 ) {
     for event in events.read() {
         if let FileDragAndDrop::DroppedFile { window, path_buf } = event {
@@ -265,6 +268,22 @@ pub fn file_drag_and_drop_system(
                 let new_json_setting: AppSettings = serde_json::from_reader(new_json_file).unwrap();
 
                 serde_json::to_writer(file, &new_json_setting).unwrap();
+
+                operation_settings.yaw_min_value = new_json_setting.yaw_min_value;
+                operation_settings.yaw_max_value = new_json_setting.yaw_max_value;
+                operation_settings.pitch_min_value = new_json_setting.pitch_min_value;
+                operation_settings.pitch_max_value = new_json_setting.pitch_max_value;
+                operation_settings.radius_range = new_json_setting.radius_range;
+                operation_settings.radius_start_position = 2.5;
+                operation_settings.model_rotate_sensitivity =
+                    new_json_setting.model_rotate_sensitivity;
+                operation_settings.model_reposition_sensitivity =
+                    new_json_setting.model_reposition_sensitivity;
+                operation_settings.mouse_sensitivity = new_json_setting.mouse_sensitivity;
+                operation_settings.zoom_sensitivity = new_json_setting.zoom_sensitivity;
+
+                live_capture_settings.live_capture_iteration =
+                    new_json_setting.live_capture_iteration;
             }
         }
     }
