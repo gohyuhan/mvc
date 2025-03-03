@@ -242,7 +242,6 @@ pub fn initialized_camera_fov(
 
                             // get the model true size after any scaling
                             let scaled_model = Vec3::from(model_box_size) * global_trans.scale();
-                            // if the scaled model is too big as in larger than 10
 
                             // Convert vertical FOV to radians
                             let vertical_fov_radians = 45.0_f32.to_radians();
