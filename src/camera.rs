@@ -109,11 +109,8 @@ pub fn live_orbit_camera(
                 orbit.radius =
                     operation_settings.radius_start_position + operation_settings.radius_range;
                 live_camera_pan_number.radius *= -1.0;
-            } else if orbit.radius
-                <= operation_settings.radius_start_position
-            {
-                orbit.radius =
-                    operation_settings.radius_start_position;
+            } else if orbit.radius <= operation_settings.radius_start_position {
+                orbit.radius = operation_settings.radius_start_position;
                 live_camera_pan_number.radius *= -1.0;
             }
 
@@ -212,7 +209,7 @@ pub fn initialized_camera_fov(
                 let scene_childrens =
                     children_query.get(*operation_window.current_scene_entity.as_ref().unwrap());
                 let mut aspect_ratio = 1280.0 / 720.0;
-                let mut model_zoom_scale:f32 = 0.0;
+                let mut model_zoom_scale: f32 = 0.0;
 
                 for window in window_query.iter() {
                     aspect_ratio = window.width() / window.height();
@@ -271,7 +268,7 @@ pub fn initialized_camera_fov(
                         camera_transform.translation = Vec3::new(0.0, 0.0, orbit.radius);
 
                         // set the operation settings radius range
-                        operation_settings.radius_range *= model_zoom_scale; 
+                        operation_settings.radius_range *= model_zoom_scale;
 
                         // set the camera initialized state
                         camera_init_status.set(CameraFovInitializedState::Initialized);
