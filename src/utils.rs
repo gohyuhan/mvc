@@ -15,7 +15,7 @@ use crate::{
         LiveCameraPanNumber, LiveCaptureOperationSettings, OperationSettings,
         OperationWindowRelatedEntities, SavePath,
     },
-    states::{AppState, OperationState},
+    states::{AppState, CameraFovInitializedState, OperationState},
     types::AppSettings,
 };
 
@@ -41,6 +41,7 @@ pub fn check_skybox_file(file_path: &str) -> bool {
                 || ext == "png"
                 || ext == "hdr"
                 || ext == "exr"
+                || ext == "ktx2"
             {
                 return true;
             } else {
@@ -71,6 +72,7 @@ pub fn switch_state_on_window_event(
     mut window_close_requested_events: EventReader<WindowCloseRequested>,
     mut app_state: ResMut<NextState<AppState>>,
     mut operation_state: ResMut<NextState<OperationState>>,
+    mut camera_init_state: ResMut<NextState<CameraFovInitializedState>>,
     mut operation_window: ResMut<OperationWindowRelatedEntities>,
     mut live_camera_pan_number: ResMut<LiveCameraPanNumber>,
 ) {
@@ -79,6 +81,7 @@ pub fn switch_state_on_window_event(
             if ev.window == op_window {
                 app_state.set(AppState::MainMenu);
                 operation_state.set(OperationState::None);
+                camera_init_state.set(CameraFovInitializedState::NotIninitialized);
                 live_camera_pan_number.yaw = 1.0;
                 live_camera_pan_number.pitch = 1.0;
                 live_camera_pan_number.radius = 1.0;
@@ -110,13 +113,13 @@ pub fn keyboard_interact(
 
     if *c_o_s == OperationState::LiveCapture {
         if keys.just_pressed(KeyCode::Space) {
-            println!("stop live capturing");
+            println!("stop live capturing 🎥");
             operation_state.set(OperationState::Interactive);
             for mut window in window_query.iter_mut() {
                 window.title = "Interactive 📱".to_string();
             }
         } else if keys.just_pressed(KeyCode::KeyI) {
-            println!("stop live capturing");
+            println!("stop live capturing 🎥");
             operation_state.set(OperationState::Interactive);
             for mut window in window_query.iter_mut() {
                 window.title = "Interactive 📱".to_string();
@@ -124,13 +127,13 @@ pub fn keyboard_interact(
         }
     } else if *c_o_s == OperationState::LivePreview {
         if keys.just_pressed(KeyCode::KeyL) {
-            println!("stop live prviewing");
+            println!("stop live prviewing 🎬");
             operation_state.set(OperationState::Interactive);
             for mut window in window_query.iter_mut() {
                 window.title = "Interactive 📱".to_string();
             }
         } else if keys.just_pressed(KeyCode::KeyI) {
-            println!("stop live prviewing");
+            println!("stop live prviewing 🎬");
             operation_state.set(OperationState::Interactive);
             for mut window in window_query.iter_mut() {
                 window.title = "Interactive 📱".to_string();
@@ -139,7 +142,7 @@ pub fn keyboard_interact(
     } else if *c_o_s == OperationState::Interactive {
         operation_settings.radius_start_position = orbit_camera.radius;
         if keys.just_pressed(KeyCode::Space) {
-            println!("start live capturing");
+            println!("start live capturing 🎥");
 
             // generate the evenly distributed coordinates
             let coordinates_list = generate_points(
@@ -174,7 +177,7 @@ pub fn keyboard_interact(
             }
             operation_state.set(OperationState::LiveCapture);
         } else if keys.just_pressed(KeyCode::KeyL) {
-            println!("start live prviewing");
+            println!("start live prviewing 🎬");
             for mut window in window_query.iter_mut() {
                 window.title = "Live Preview 🎬".to_string();
             }

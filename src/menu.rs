@@ -152,7 +152,7 @@ pub fn button_click_system(
 ) {
     // Check if the files and all were valid then enter window to render 3d model or warn user about invalid file
     if let Ok(Interaction::Pressed) = interactive_mode.get_single() {
-        println!("Enter Opration Mode");
+        println!("Enter Opration Mode 👷‍♂️");
         let a_p = asset_path.clone();
         let mut proceed = true;
         if !check_model_file(&a_p.model_path) {
@@ -218,7 +218,7 @@ pub fn file_drag_and_drop_system(
     for event in events.read() {
         if let FileDragAndDrop::DroppedFile { window, path_buf } = event {
             println!(
-                "Dropped file with path: {:?}, in window id: {:?}",
+                "Dropped file 📂 with path: {:?}, in window id: {:?}",
                 path_buf, window
             );
             let p = path_buf.to_str().unwrap().to_string();

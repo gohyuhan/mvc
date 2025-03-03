@@ -39,7 +39,6 @@ pub fn interactive(
         // get the loaded image back and process it so that it can be compatible for a 3d dimension
         if image.texture_descriptor.array_layer_count() == 1 {
             image.reinterpret_stacked_2d_as_array((image.height() / image.width()).max(1));
-            print!("{}", image.texture_descriptor.array_layer_count());
             image.texture_view_descriptor = Some(TextureViewDescriptor {
                 dimension: Some(TextureViewDimension::Cube),
 
@@ -58,7 +57,7 @@ pub fn interactive(
                 diffuse_map: asset_server
                     .load("embedded://mvc/assets/pisa_diffuse_rgb9e5_zstd.ktx2"), // load the environment map light from embedded resource
                 specular_map: asset_server
-                    .load("embedded://mvc/assets/pisa_diffuse_rgb9e5_zstd.ktx2"), // load the environment map light from embedded resource
+                    .load("embedded://mvc/assets/pisa_specular_rgb9e5_zstd.ktx2"), // load the environment map light from embedded resource
                 intensity: 250.0,
                 ..default()
             },
@@ -68,6 +67,11 @@ pub fn interactive(
                 hdr: true,
                 ..default()
             },
+            Projection::from(PerspectiveProjection {
+                fov: 45.0_f32.to_radians(),
+                aspect_ratio: 1280.0 / 720.0,
+                ..default()
+            }),
             Skybox {
                 image: skybox_attributes.skybox_handler.as_ref().unwrap().clone(),
                 brightness: 1000.0,
@@ -93,6 +97,9 @@ pub fn interactive(
             ..default()
         },))
         .id();
+
+    // the scene handler
+    let scene_handler = asset_server.load(GltfAssetLabel::Scene(0).from_asset(model_path.clone()));
 
     // spawn the 3d model
     let scene_entity = commands
@@ -120,7 +127,6 @@ pub fn interactive(
 
     let entities_list: Vec<Entity> = vec![
         interac_window,
-        // skybox_entity,
         interac_window_camera,
         directional_light,
         scene_entity,
@@ -129,7 +135,9 @@ pub fn interactive(
 
     // saving the entites to a list, so that we can easily despawn them when the window close
     operation_window.window = Some(interac_window);
-    operation_window.entities_list = Some(entities_list)
+    operation_window.entities_list = Some(entities_list);
+    operation_window.current_scene_handler = Some(scene_handler);
+    operation_window.current_scene_entity = Some(scene_entity);
 }
 // set the ambient light that is used for the scene
 pub fn setup_ambient_light(mut ambient_light: ResMut<AmbientLight>) {
@@ -153,25 +161,25 @@ pub fn reposition_rotate_model(
                     // rotate model
                     if keys.pressed(KeyCode::ArrowUp) {
                         println!(
-                            "Rotate model upward by {}",
+                            "🔄⬆ Rotate model upward by {}",
                             operation_settings.model_rotate_sensitivity
                         );
                         transform.rotate_local_x(-operation_settings.model_rotate_sensitivity);
                     } else if keys.pressed(KeyCode::ArrowDown) {
                         println!(
-                            "Rotate model downward by {}",
+                            " 🔄⬇ Rotate model downward by {}",
                             operation_settings.model_rotate_sensitivity
                         );
                         transform.rotate_local_x(operation_settings.model_rotate_sensitivity);
                     } else if keys.pressed(KeyCode::ArrowRight) {
                         println!(
-                            "Rotate model to the right by {}",
+                            "🔄➡ Rotate model to the right by {}",
                             operation_settings.model_rotate_sensitivity
                         );
                         transform.rotate_local_y(operation_settings.model_rotate_sensitivity);
                     } else if keys.pressed(KeyCode::ArrowLeft) {
                         println!(
-                            "Rotate model to the left by {}",
+                            "🔄⬅ Rotate model to the left by {}",
                             operation_settings.model_rotate_sensitivity
                         );
                         transform.rotate_local_y(-operation_settings.model_rotate_sensitivity);
@@ -180,28 +188,28 @@ pub fn reposition_rotate_model(
                     // move model
                     if keys.pressed(KeyCode::KeyW) {
                         println!(
-                            "Moved model upward by {}",
+                            "⬆️ Moved model upward by {}",
                             operation_settings.model_reposition_sensitivity
                         );
                         model.y += operation_settings.model_reposition_sensitivity;
                         transform.translation.y = model.y;
                     } else if keys.pressed(KeyCode::KeyS) {
                         println!(
-                            "Moved model downward by {}",
+                            "⬇️ Moved model downward by {}",
                             operation_settings.model_reposition_sensitivity
                         );
                         model.y -= operation_settings.model_reposition_sensitivity;
                         transform.translation.y = model.y;
                     } else if keys.pressed(KeyCode::KeyD) {
                         println!(
-                            "Moved model to the right by {}",
+                            "➡️ Moved model to the right by {}",
                             operation_settings.model_reposition_sensitivity
                         );
                         model.x += operation_settings.model_reposition_sensitivity;
                         transform.translation.x = model.x;
                     } else if keys.pressed(KeyCode::KeyA) {
                         println!(
-                            "Moved model to the left by {}",
+                            "⬅️ Moved model to the left by {}",
                             operation_settings.model_reposition_sensitivity
                         );
                         model.x -= operation_settings.model_reposition_sensitivity;

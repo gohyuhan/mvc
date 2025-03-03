@@ -15,3 +15,10 @@ pub enum OperationState {
     LiveCapture,
     LivePreview,
 }
+
+#[derive(States, Debug, Clone, Eq, PartialEq, Hash, Default)]
+pub enum CameraFovInitializedState {
+    #[default]
+    NotIninitialized,
+    Initialized,
+}

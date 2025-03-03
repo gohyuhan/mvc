@@ -61,6 +61,8 @@ fn main() {
     });
     app.insert_resource(OperationWindowRelatedEntities {
         window: None,
+        current_scene_handler: None,
+        current_scene_entity: None,
         entities_list: None,
     });
     app.insert_resource(LiveCameraPanNumber {
@@ -114,6 +116,7 @@ fn main() {
     // set initial state
     app.insert_state(AppState::MainMenu);
     app.insert_state(OperationState::None);
+    app.insert_state(CameraFovInitializedState::NotIninitialized);
     app.add_systems(Startup, menu);
     app.add_systems(
         Update,
@@ -121,17 +124,29 @@ fn main() {
             file_drag_and_drop_system.run_if(in_state(AppState::MainMenu)),
             button_click_system.run_if(in_state(AppState::MainMenu)),
             keyboard_interact.run_if(in_state(AppState::OperationMode)),
+            initialized_camera_fov.run_if(
+                in_state(AppState::OperationMode)
+                    .and(in_state(CameraFovInitializedState::NotIninitialized)),
+            ),
             live_capture_camera.run_if(
-                in_state(AppState::OperationMode).and(in_state(OperationState::LiveCapture)),
+                in_state(AppState::OperationMode)
+                    .and(in_state(OperationState::LiveCapture))
+                    .and(in_state(CameraFovInitializedState::Initialized)),
             ),
             reposition_rotate_model.run_if(
-                in_state(AppState::OperationMode).and(in_state(OperationState::Interactive)),
+                in_state(AppState::OperationMode)
+                    .and(in_state(OperationState::Interactive))
+                    .and(in_state(CameraFovInitializedState::Initialized)),
             ),
             interactive_orbit_camera.run_if(
-                in_state(AppState::OperationMode).and(in_state(OperationState::Interactive)),
+                in_state(AppState::OperationMode)
+                    .and(in_state(OperationState::Interactive))
+                    .and(in_state(CameraFovInitializedState::Initialized)),
             ),
             live_orbit_camera.run_if(
-                in_state(AppState::OperationMode).and(in_state(OperationState::LivePreview)),
+                in_state(AppState::OperationMode)
+                    .and(in_state(OperationState::LivePreview))
+                    .and(in_state(CameraFovInitializedState::Initialized)),
             ),
             setup_ambient_light.run_if(in_state(AppState::OperationMode)),
             switch_state_on_window_event,

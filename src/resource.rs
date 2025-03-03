@@ -2,6 +2,7 @@ use bevy::{
     asset::Handle,
     ecs::{entity::Entity, system::Resource},
     image::Image,
+    scene::Scene,
 };
 
 #[derive(Resource, Debug, Clone)]
@@ -20,6 +21,8 @@ pub struct SavePath {
 #[derive(Resource)]
 pub struct OperationWindowRelatedEntities {
     pub window: Option<Entity>,
+    pub current_scene_handler: Option<Handle<Scene>>,
+    pub current_scene_entity: Option<Entity>,
     pub entities_list: Option<Vec<Entity>>,
 }
 
