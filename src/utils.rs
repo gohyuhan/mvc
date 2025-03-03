@@ -204,11 +204,11 @@ pub fn init_app() -> AppSettings {
         .join("Downloads")
         .to_string_lossy()
         .to_string();
-    const YAW_MIN_VALUE: f32 = -0.75;
-    const YAW_MAX_VALUE: f32 = 0.75;
-    const PITCH_MIN_VALUE: f32 = -0.60;
+    const YAW_MIN_VALUE: f32 = -1.27;
+    const YAW_MAX_VALUE: f32 = 1.27;
+    const PITCH_MIN_VALUE: f32 = -0.90;
     const PITCH_MAX_VALUE: f32 = -0.20;
-    const RADIUS_RANGE: f32 = 2.0;
+    const RADIUS_RANGE: f32 = 200.0;
     const MODEL_ROTATE_SENSITIVITY: f32 = 0.05;
     const MODEL_REPOSITION_SENSITIVITY: f32 = 0.05;
     const MOUSE_SENSITIVITY: f32 = 0.0025;
