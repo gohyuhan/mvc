@@ -6,7 +6,10 @@ use std::{
 use bevy::prelude::*;
 
 use crate::{
-    components::{ClearModelAssetsButton, ClearSkyboxAssetsButton, InteractiveMode, ModelPathLabel, SkyboxPathLabel},
+    components::{
+        ClearModelAssetsButton, ClearSkyboxAssetsButton, InteractiveMode, ModelPathLabel,
+        SkyboxPathLabel,
+    },
     render::interactive,
     resource::{
         AssetPath, LiveCaptureOperationSettings, OperationSettings, OperationWindowRelatedEntities,
@@ -65,139 +68,139 @@ pub fn menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                         Label,
                     ));
 
-            // to the amount of 3d files
-            parent.spawn((
-                Text::new("[ 3d model asset(s) ]: -"),
-                Node {
-                    margin: UiRect {
-                        top: Val::Px(5.0), // Margin between children
-                        ..Default::default()
-                    },
-                    justify_content: JustifyContent::Center,
-                    align_items: AlignItems::Center,
-                    ..default()
-                },
-                TextFont {
-                    font: font.clone(),
-                    font_size: PATH_FONT_SIZE,
-                    ..default()
-                },
-                ModelPathLabel,
-            ));
-
-            // to label the path to the skybox file to let user know which model will be render
-            parent.spawn((
-                Text::new("[ skybox asset ]: -"),
-                Node {
-                    margin: UiRect {
-                        top: Val::Px(5.0), // Margin between children
-                        ..Default::default()
-                    },
-                    justify_content: JustifyContent::Center,
-                    align_items: AlignItems::Center,
-                    ..default()
-                },
-                TextFont {
-                    font: font.clone(),
-                    font_size: PATH_FONT_SIZE,
-                    ..default()
-                },
-                SkyboxPathLabel,
-            ));
-
-            // Button to Start 3d render operation
-            parent
-                .spawn((
-                    Button,
-                    Node {
-                        margin: UiRect {
-                            top: Val::Px(10.0), // Margin between children
-                            ..Default::default()
+                    // to the amount of 3d files
+                    parent.spawn((
+                        Text::new("[ 3d model asset(s) ]: -"),
+                        Node {
+                            margin: UiRect {
+                                top: Val::Px(5.0), // Margin between children
+                                ..Default::default()
+                            },
+                            justify_content: JustifyContent::Center,
+                            align_items: AlignItems::Center,
+                            ..default()
                         },
-                        height: Val::Px(50.0),
-                        padding: UiRect::all(Val::Px(10.0)),
-                        border: UiRect::all(Val::Px(2.0)),
-                        justify_content: JustifyContent::Center,
-                        align_items: AlignItems::Center,
-                        ..default()
-                    },
-                    BorderColor(Color::BLACK),
-                    BorderRadius::MAX,
-                    BackgroundColor(Color::srgb(0.15, 0.15, 0.15)),
-                    InteractiveMode,
-                ))
-                .with_child((
-                    Text::new("Render Model"),
-                    TextFont {
-                        font: font.clone(),
-                        font_size: FONT_SIZE,
-                        ..default()
-                    },
-                    TextColor(Color::srgb(0.9, 0.9, 0.9)),
-                ));
+                        TextFont {
+                            font: font.clone(),
+                            font_size: PATH_FONT_SIZE,
+                            ..default()
+                        },
+                        ModelPathLabel,
+                    ));
 
-            // Button to clear all current models assets path
-            parent
-                .spawn((
-                    Button,
-                    Node {
-                        margin: UiRect {
-                            top: Val::Px(10.0), // Margin between children
-                            ..Default::default()
+                    // to label the path to the skybox file to let user know which model will be render
+                    parent.spawn((
+                        Text::new("[ skybox asset ]: -"),
+                        Node {
+                            margin: UiRect {
+                                top: Val::Px(5.0), // Margin between children
+                                ..Default::default()
+                            },
+                            justify_content: JustifyContent::Center,
+                            align_items: AlignItems::Center,
+                            ..default()
                         },
-                        height: Val::Px(50.0),
-                        padding: UiRect::all(Val::Px(10.0)),
-                        border: UiRect::all(Val::Px(2.0)),
-                        justify_content: JustifyContent::Center,
-                        align_items: AlignItems::Center,
-                        ..default()
-                    },
-                    BorderColor(Color::BLACK),
-                    BorderRadius::MAX,
-                    BackgroundColor(Color::srgb(0.15, 0.15, 0.15)),
-                    ClearModelAssetsButton,
-                ))
-                .with_child((
-                    Text::new("Clear Model Assets"),
-                    TextFont {
-                        font: font.clone(),
-                        font_size: FONT_SIZE,
-                        ..default()
-                    },
-                    TextColor(Color::srgb(0.9, 0.0, 0.0)),
-                ));
-            
-            // Button to clear all current skybox assets path
-            parent
-                .spawn((
-                    Button,
-                    Node {
-                        margin: UiRect {
-                            top: Val::Px(10.0), // Margin between children
-                            ..Default::default()
+                        TextFont {
+                            font: font.clone(),
+                            font_size: PATH_FONT_SIZE,
+                            ..default()
                         },
-                        height: Val::Px(50.0),
-                        padding: UiRect::all(Val::Px(10.0)),
-                        border: UiRect::all(Val::Px(2.0)),
-                        justify_content: JustifyContent::Center,
-                        align_items: AlignItems::Center,
-                        ..default()
-                    },
-                    BorderColor(Color::BLACK),
-                    BorderRadius::MAX,
-                    BackgroundColor(Color::srgb(0.15, 0.15, 0.15)),
-                    ClearSkyboxAssetsButton,
-                ))
-                .with_child((
-                    Text::new("Clear Skybox Asset"),
-                    TextFont {
-                        font: font.clone(),
-                        font_size: FONT_SIZE,
-                        ..default()
-                    },
-                    TextColor(Color::srgb(0.9, 0.0, 0.0)),
-                ));
-            });
+                        SkyboxPathLabel,
+                    ));
+
+                    // Button to Start 3d render operation
+                    parent
+                        .spawn((
+                            Button,
+                            Node {
+                                margin: UiRect {
+                                    top: Val::Px(10.0), // Margin between children
+                                    ..Default::default()
+                                },
+                                height: Val::Px(50.0),
+                                padding: UiRect::all(Val::Px(10.0)),
+                                border: UiRect::all(Val::Px(2.0)),
+                                justify_content: JustifyContent::Center,
+                                align_items: AlignItems::Center,
+                                ..default()
+                            },
+                            BorderColor(Color::BLACK),
+                            BorderRadius::MAX,
+                            BackgroundColor(Color::srgb(0.15, 0.15, 0.15)),
+                            InteractiveMode,
+                        ))
+                        .with_child((
+                            Text::new("Render Model"),
+                            TextFont {
+                                font: font.clone(),
+                                font_size: FONT_SIZE,
+                                ..default()
+                            },
+                            TextColor(Color::srgb(0.9, 0.9, 0.9)),
+                        ));
+
+                    // Button to clear all current models assets path
+                    parent
+                        .spawn((
+                            Button,
+                            Node {
+                                margin: UiRect {
+                                    top: Val::Px(10.0), // Margin between children
+                                    ..Default::default()
+                                },
+                                height: Val::Px(50.0),
+                                padding: UiRect::all(Val::Px(10.0)),
+                                border: UiRect::all(Val::Px(2.0)),
+                                justify_content: JustifyContent::Center,
+                                align_items: AlignItems::Center,
+                                ..default()
+                            },
+                            BorderColor(Color::BLACK),
+                            BorderRadius::MAX,
+                            BackgroundColor(Color::srgb(0.15, 0.15, 0.15)),
+                            ClearModelAssetsButton,
+                        ))
+                        .with_child((
+                            Text::new("Clear Model Assets"),
+                            TextFont {
+                                font: font.clone(),
+                                font_size: FONT_SIZE,
+                                ..default()
+                            },
+                            TextColor(Color::srgb(0.9, 0.0, 0.0)),
+                        ));
+
+                    // Button to clear all current skybox assets path
+                    parent
+                        .spawn((
+                            Button,
+                            Node {
+                                margin: UiRect {
+                                    top: Val::Px(10.0), // Margin between children
+                                    ..Default::default()
+                                },
+                                height: Val::Px(50.0),
+                                padding: UiRect::all(Val::Px(10.0)),
+                                border: UiRect::all(Val::Px(2.0)),
+                                justify_content: JustifyContent::Center,
+                                align_items: AlignItems::Center,
+                                ..default()
+                            },
+                            BorderColor(Color::BLACK),
+                            BorderRadius::MAX,
+                            BackgroundColor(Color::srgb(0.15, 0.15, 0.15)),
+                            ClearSkyboxAssetsButton,
+                        ))
+                        .with_child((
+                            Text::new("Clear Skybox Asset"),
+                            TextFont {
+                                font: font.clone(),
+                                font_size: FONT_SIZE,
+                                ..default()
+                            },
+                            TextColor(Color::srgb(0.9, 0.0, 0.0)),
+                        ));
+                });
         });
 }
 
@@ -259,7 +262,7 @@ pub fn button_click_system(
                 interactive(
                     commands,
                     asset_server,
-                    asset_path.models_path[asset_path.current_model_path_count].clone(),
+                    asset_path.models_path[asset_path.current_model_path_count as usize].clone(),
                     images,
                     skybox_attributes,
                     operation_window,
@@ -292,7 +295,6 @@ pub fn button_click_system(
         for (mut text, _) in path_label_param_set.p1().iter_mut() {
             text.0 = "[ skybox asset ]: -".to_string();
         }
-        
     }
 }
 

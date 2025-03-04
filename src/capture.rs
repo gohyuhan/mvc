@@ -16,7 +16,8 @@ pub fn take_snapshot(
     pitch: f32,
     radius: f32,
 ) {
-    let current_save_path_info = &save_settings.save_path_list[save_settings.current_path_count];
+    let current_save_path_info =
+        &save_settings.save_path_list[save_settings.current_path_count as usize];
     let path = Path::new(&current_save_path_info.current_dir_path).join(format!(
         "{}_{}_{}_{}.jpg",
         current_save_path_info.file_name_prefix, yaw, pitch, radius

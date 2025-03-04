@@ -10,8 +10,10 @@ use bevy::{
 
 use crate::{
     components::{ModelRotateReposition, OrbitCamera},
-    resource::{OperationSettings, OperationWindowRelatedEntities, SkyboxAttribute},
-    states::OperationState,
+    resource::{
+        AssetPath, OperationSettings, OperationWindowRelatedEntities, SavePathList, SkyboxAttribute,
+    },
+    states::{AppState, CameraFovInitializedState, OperationState, RenderModelForwardOrBackward},
 };
 
 // this will be the function responsible to spawn a window for the 3d model to render in
@@ -104,7 +106,7 @@ pub fn interactive(
     // spawn the 3d model
     let scene_entity = commands
         .spawn((
-            SceneRoot(asset_server.load(GltfAssetLabel::Scene(0).from_asset(model_path.clone()))),
+            SceneRoot(scene_handler.clone()),
             Transform::from_translation(Vec3::ZERO),
             ModelRotateReposition {
                 window: interac_window,
@@ -129,7 +131,6 @@ pub fn interactive(
         interac_window,
         interac_window_camera,
         directional_light,
-        scene_entity,
         node_entity,
     ];
 
@@ -221,5 +222,100 @@ pub fn reposition_rotate_model(
         Err(_) => {
             return;
         }
+    }
+}
+
+pub fn switch_current_model(
+    commands: Commands,
+    keys: Res<ButtonInput<KeyCode>>,
+    current_operation_state: Res<State<OperationState>>,
+    asset_server: Res<AssetServer>,
+    operation_window: ResMut<OperationWindowRelatedEntities>,
+    save_settings: ResMut<SavePathList>,
+    assets_path: ResMut<AssetPath>,
+    mut camera_init_state: ResMut<NextState<CameraFovInitializedState>>,
+    mut app_state: ResMut<NextState<AppState>>,
+) {
+    let c_o_s = current_operation_state.as_ref().get();
+    if *c_o_s == OperationState::Interactive {
+        // rotate model
+        if keys.just_pressed(KeyCode::KeyQ) {
+            app_state.set(AppState::ModelSwitchingMode);
+            camera_init_state.set(CameraFovInitializedState::NotInitialized);
+            println!("🔄 Switching Model");
+            switch_model(
+                commands,
+                asset_server,
+                operation_window,
+                save_settings,
+                assets_path,
+                RenderModelForwardOrBackward::Backward,
+            );
+            app_state.set(AppState::OperationMode);
+        } else if keys.just_pressed(KeyCode::KeyE) {
+            app_state.set(AppState::ModelSwitchingMode);
+            camera_init_state.set(CameraFovInitializedState::NotInitialized);
+            println!("🔄 Switching Model");
+            switch_model(
+                commands,
+                asset_server,
+                operation_window,
+                save_settings,
+                assets_path,
+                RenderModelForwardOrBackward::Forward,
+            );
+            app_state.set(AppState::OperationMode);
+        }
+    }
+}
+
+pub fn switch_model(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut operation_window: ResMut<OperationWindowRelatedEntities>,
+    mut save_settings: ResMut<SavePathList>,
+    mut assets_path: ResMut<AssetPath>,
+    forward_or_backward: RenderModelForwardOrBackward,
+) {
+    // despawn the current 3d model
+    commands
+        .entity(operation_window.current_scene_entity.unwrap())
+        .despawn_recursive();
+
+    let mut forward_backward: i64 = 1;
+    if forward_or_backward == RenderModelForwardOrBackward::Backward {
+        forward_backward = -1;
+    }
+
+    // spawn the new 3d model
+    assets_path.current_model_path_count += forward_backward;
+    if assets_path.current_model_path_count >= assets_path.models_path.len() as i64 {
+        assets_path.current_model_path_count = 0;
+    } else if assets_path.current_model_path_count < 0 {
+        assets_path.current_model_path_count = (assets_path.models_path.len() - 1) as i64;
+    }
+    let model_path = assets_path.models_path[assets_path.current_model_path_count as usize].clone();
+
+    let scene_handler = asset_server.load(GltfAssetLabel::Scene(0).from_asset(model_path.clone()));
+    let scene_entity = commands
+        .spawn((
+            SceneRoot(scene_handler.clone()),
+            Transform::from_translation(Vec3::ZERO),
+            ModelRotateReposition {
+                window: operation_window.window.unwrap(),
+                x: 0.0,
+                y: 0.0,
+            },
+        ))
+        .id();
+
+    operation_window.current_scene_handler = Some(scene_handler);
+    operation_window.current_scene_entity = Some(scene_entity);
+
+    save_settings.current_path_count += forward_backward;
+    if save_settings.current_path_count >= save_settings.save_path_list.len() as i64 {
+        save_settings.current_path_count = 0;
+    } else if save_settings.current_path_count < 0 {
+        save_settings.current_path_count = (save_settings.save_path_list.len() - 1) as i64
     }
 }

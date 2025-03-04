@@ -5,6 +5,7 @@ pub enum AppState {
     #[default]
     MainMenu,
     OperationMode,
+    ModelSwitchingMode,
 }
 
 #[derive(States, Debug, Clone, Eq, PartialEq, Hash, Default)]
@@ -19,6 +20,13 @@ pub enum OperationState {
 #[derive(States, Debug, Clone, Eq, PartialEq, Hash, Default)]
 pub enum CameraFovInitializedState {
     #[default]
-    NotIninitialized,
+    NotInitialized,
     Initialized,
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Default)]
+pub enum RenderModelForwardOrBackward {
+    #[default]
+    Forward,
+    Backward,
 }

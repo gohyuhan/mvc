@@ -81,13 +81,16 @@ pub fn switch_state_on_window_event(
             if ev.window == op_window {
                 app_state.set(AppState::MainMenu);
                 operation_state.set(OperationState::None);
-                camera_init_state.set(CameraFovInitializedState::NotIninitialized);
+                camera_init_state.set(CameraFovInitializedState::NotInitialized);
                 live_camera_pan_number.yaw = 1.0;
                 live_camera_pan_number.pitch = 1.0;
                 live_camera_pan_number.radius = 1.0;
                 for entity in operation_window.entities_list.as_mut().unwrap() {
                     commands.entity(*entity).despawn_recursive();
                 }
+                commands
+                    .entity(operation_window.current_scene_entity.unwrap())
+                    .despawn();
             }
         }
     }
@@ -303,8 +306,9 @@ fn generate_points(
 }
 
 fn snapshot_directory_init(save_settings: SavePathList) {
-    let snapshot_path =
-        Path::new(&save_settings.save_path_list[save_settings.current_path_count].current_dir_path);
+    let snapshot_path = Path::new(
+        &save_settings.save_path_list[save_settings.current_path_count as usize].current_dir_path,
+    );
     if !snapshot_path.exists() {
         create_dir_all(&snapshot_path).unwrap();
     }

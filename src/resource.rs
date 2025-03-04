@@ -11,14 +11,14 @@ use crate::types::SavePath;
 pub struct AssetPath {
     pub models_path: Vec<String>,
     pub skybox_path: String,
-    pub current_model_path_count: usize,
+    pub current_model_path_count: i64,
 }
 
 #[derive(Resource, Debug, Clone)]
 pub struct SavePathList {
     pub base_dir_path: String,
     pub save_path_list: Vec<SavePath>,
-    pub current_path_count: usize,
+    pub current_path_count: i64,
 }
 
 #[derive(Resource)]

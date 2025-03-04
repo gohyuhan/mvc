@@ -34,6 +34,8 @@ use types::*;
 // C: capture 1 snapshot
 // L: enter or exit live preview mode
 // I: enter or exit interactive mode
+// Q: render the previous model
+// E: render the next model
 // space: enter or exit live capture mode
 // arrow key: rotate model
 // wasd: move the model
@@ -117,7 +119,7 @@ fn main() {
     // set initial state
     app.insert_state(AppState::MainMenu);
     app.insert_state(OperationState::None);
-    app.insert_state(CameraFovInitializedState::NotIninitialized);
+    app.insert_state(CameraFovInitializedState::NotInitialized);
     app.add_systems(Startup, menu);
     app.add_systems(
         Update,
@@ -127,7 +129,7 @@ fn main() {
             keyboard_interact.run_if(in_state(AppState::OperationMode)),
             initialized_camera_fov.run_if(
                 in_state(AppState::OperationMode)
-                    .and(in_state(CameraFovInitializedState::NotIninitialized)),
+                    .and(in_state(CameraFovInitializedState::NotInitialized)),
             ),
             live_capture_camera.run_if(
                 in_state(AppState::OperationMode)
@@ -149,7 +151,14 @@ fn main() {
                     .and(in_state(OperationState::LivePreview))
                     .and(in_state(CameraFovInitializedState::Initialized)),
             ),
-            setup_ambient_light.run_if(in_state(AppState::OperationMode)),
+            switch_current_model.run_if(
+                in_state(AppState::OperationMode)
+                    .and(in_state(OperationState::Interactive))
+                    .and(in_state(CameraFovInitializedState::Initialized)),
+            ),
+            setup_ambient_light.run_if(
+                in_state(AppState::OperationMode).and(in_state(AppState::ModelSwitchingMode)),
+            ),
             switch_state_on_window_event,
         ),
     );
