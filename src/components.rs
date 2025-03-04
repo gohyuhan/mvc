@@ -4,6 +4,12 @@ use bevy::ecs::{component::Component, entity::Entity};
 pub struct InteractiveMode;
 
 #[derive(Component)]
+pub struct ClearModelAssetsButton;
+
+#[derive(Component)]
+pub struct ClearSkyboxAssetsButton;
+
+#[derive(Component)]
 pub struct ModelPathLabel;
 
 #[derive(Component)]
