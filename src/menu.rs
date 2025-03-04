@@ -201,9 +201,7 @@ pub fn menu(mut commands: Commands, asset_server: Res<AssetServer>) {
 
                     // to label the keyboard commands
                     parent.spawn((
-                        Text::new(
-                            "Keyboard and Mouse Commands:"
-                        ),
+                        Text::new("Keyboard and Mouse Commands:"),
                         Node {
                             margin: UiRect {
                                 top: Val::Px(5.0),
@@ -218,107 +216,87 @@ pub fn menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                             font: font.clone(),
                             font_size: PATH_FONT_SIZE,
                             ..default()
-                        }
+                        },
                     ));
                     parent.spawn((
-                        Text::new(
-                            "C : capture 1 snapshot"
-                        ),
+                        Text::new("C : capture 1 snapshot"),
                         TextFont {
                             font: font.clone(),
                             font_size: PATH_FONT_SIZE,
                             ..default()
-                        }
+                        },
                     ));
                     parent.spawn((
-                        Text::new(
-                            "L : enter or exit live preview mode"
-                        ),
+                        Text::new("L : enter or exit live preview mode"),
                         TextFont {
                             font: font.clone(),
                             font_size: PATH_FONT_SIZE,
                             ..default()
-                        }
+                        },
                     ));
                     parent.spawn((
-                        Text::new(
-                            "I : enter or exit interactive mode"
-                        ),
+                        Text::new("I : enter or exit interactive mode"),
                         TextFont {
                             font: font.clone(),
                             font_size: PATH_FONT_SIZE,
                             ..default()
-                        }
+                        },
                     ));
                     parent.spawn((
-                        Text::new(
-                            "Q : render the previous model"
-                        ),
+                        Text::new("Q : render the previous model"),
                         TextFont {
                             font: font.clone(),
                             font_size: PATH_FONT_SIZE,
                             ..default()
-                        }
+                        },
                     ));
                     parent.spawn((
-                        Text::new(
-                            "E : render the next model"
-                        ),
+                        Text::new("E : render the next model"),
                         TextFont {
                             font: font.clone(),
                             font_size: PATH_FONT_SIZE,
                             ..default()
-                        }
+                        },
                     ));
                     parent.spawn((
-                        Text::new(
-                            "SPACE : enter or exit live capture mode"
-                        ),
+                        Text::new("SPACE : enter or exit live capture mode"),
                         TextFont {
                             font: font.clone(),
                             font_size: PATH_FONT_SIZE,
                             ..default()
-                        }
+                        },
                     ));
                     parent.spawn((
-                        Text::new(
-                            "ARROW KEY : rotate model"
-                        ),
+                        Text::new("ARROW KEY : rotate model"),
                         TextFont {
                             font: font.clone(),
                             font_size: PATH_FONT_SIZE,
                             ..default()
-                        }
+                        },
                     ));
                     parent.spawn((
-                        Text::new(
-                            "WASD : move the model"
-                        ),
+                        Text::new("WASD : move the model"),
                         TextFont {
                             font: font.clone(),
                             font_size: PATH_FONT_SIZE,
                             ..default()
-                        }
+                        },
                     ));
                     parent.spawn((
-                        Text::new(
-                            "MOUSE WHEEL : zoom in or out"
-                        ),
+                        Text::new("MOUSE WHEEL : zoom in or out"),
                         TextFont {
                             font: font.clone(),
                             font_size: PATH_FONT_SIZE,
                             ..default()
-                        }
+                        },
                     ));
                     parent.spawn((
-                        Text::new(
-                            "MOUSE DRAG : rotate the model"
-                        ),
+                        Text::new("MOUSE DRAG : rotate the model"),
                         TextFont {
                             font: font.clone(),
                             font_size: PATH_FONT_SIZE,
                             ..default()
-                        }
+                        },
                     ));
                 });
         });
@@ -448,36 +426,36 @@ pub fn file_drag_and_drop_system(
 
             if check_model_file(&p) {
                 let string_path = path_buf.to_str().unwrap().to_string();
+
                 // check if we already have the file path info within the models_path array to prevent duplicate model rendering
-                if three_d_model_asset_path.models_path.contains(&string_path) {
-                    return;
-                }
-                // to check if model file then save the path, the directory name and file prefix
-                three_d_model_asset_path.models_path.push(string_path);
-                let filename = path_buf.file_stem().unwrap().to_str().unwrap().to_string();
-                let current_dir_path = PathBuf::from(&save_settings.base_dir_path)
-                    .join(&filename)
-                    .to_str()
-                    .unwrap()
-                    .to_string();
-                let file_name_prefix = filename;
+                if !three_d_model_asset_path.models_path.contains(&string_path) {
+                    // to check if model file then save the path, the directory name and file prefix
+                    three_d_model_asset_path.models_path.push(string_path);
+                    let filename = path_buf.file_stem().unwrap().to_str().unwrap().to_string();
+                    let current_dir_path = PathBuf::from(&save_settings.base_dir_path)
+                        .join(&filename)
+                        .to_str()
+                        .unwrap()
+                        .to_string();
+                    let file_name_prefix = filename;
 
-                let image_save_path = SavePath {
-                    current_dir_path,
-                    file_name_prefix,
-                };
+                    let image_save_path = SavePath {
+                        current_dir_path,
+                        file_name_prefix,
+                    };
 
-                save_settings.save_path_list.push(image_save_path);
-                println!("save setting: {:?}", save_settings);
+                    save_settings.save_path_list.push(image_save_path);
+                    println!("save setting: {:?}", save_settings);
 
-                for (mut text, _) in &mut path_label_param_set.p0().iter_mut() {
-                    text.0 = format!(
-                        "[ 3d model asset(s) ]: {} files",
-                        three_d_model_asset_path.models_path.len()
-                    )
-                }
-                for (mut text, _) in &mut path_label_color_param_set.p0().iter_mut() {
-                    text.0 = Color::srgb(255., 255., 255.);
+                    for (mut text, _) in &mut path_label_param_set.p0().iter_mut() {
+                        text.0 = format!(
+                            "[ 3d model asset(s) ]: {} files",
+                            three_d_model_asset_path.models_path.len()
+                        )
+                    }
+                    for (mut text, _) in &mut path_label_color_param_set.p0().iter_mut() {
+                        text.0 = Color::srgb(255., 255., 255.);
+                    }
                 }
             } else if check_skybox_file(&p) {
                 // to check if skybox file then save the path

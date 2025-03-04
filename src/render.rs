@@ -30,7 +30,7 @@ pub fn interactive(
     let interac_window = commands
         .spawn(Window {
             title: "Interactive 📱".to_string(),
-            resolution: WindowResolution::new(1280., 720.),
+            resolution: WindowResolution::new(720., 720.),
             position: WindowPosition::At(IVec2::new(300, 0)),
             ..default()
         })
