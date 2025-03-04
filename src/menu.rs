@@ -48,10 +48,8 @@ pub fn menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                 .spawn(Node {
                     width: Val::Percent(100.),
                     flex_direction: FlexDirection::Column,
-                    align_items: AlignItems::Center,
-                    justify_content: JustifyContent::Center,
                     margin: UiRect {
-                        top: Val::Px(5.0), // Margin between children
+                        top: Val::Px(5.0),
                         ..Default::default()
                     },
                     ..default()
@@ -73,7 +71,7 @@ pub fn menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                         Text::new("[ 3d model asset(s) ]: -"),
                         Node {
                             margin: UiRect {
-                                top: Val::Px(5.0), // Margin between children
+                                top: Val::Px(5.0),
                                 ..Default::default()
                             },
                             justify_content: JustifyContent::Center,
@@ -93,7 +91,7 @@ pub fn menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                         Text::new("[ skybox asset ]: -"),
                         Node {
                             margin: UiRect {
-                                top: Val::Px(5.0), // Margin between children
+                                top: Val::Px(5.0),
                                 ..Default::default()
                             },
                             justify_content: JustifyContent::Center,
@@ -114,7 +112,7 @@ pub fn menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                             Button,
                             Node {
                                 margin: UiRect {
-                                    top: Val::Px(10.0), // Margin between children
+                                    top: Val::Px(10.0),
                                     ..Default::default()
                                 },
                                 height: Val::Px(50.0),
@@ -145,7 +143,7 @@ pub fn menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                             Button,
                             Node {
                                 margin: UiRect {
-                                    top: Val::Px(10.0), // Margin between children
+                                    top: Val::Px(10.0),
                                     ..Default::default()
                                 },
                                 height: Val::Px(50.0),
@@ -176,7 +174,7 @@ pub fn menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                             Button,
                             Node {
                                 margin: UiRect {
-                                    top: Val::Px(10.0), // Margin between children
+                                    top: Val::Px(10.0),
                                     ..Default::default()
                                 },
                                 height: Val::Px(50.0),
@@ -200,6 +198,128 @@ pub fn menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                             },
                             TextColor(Color::srgb(0.9, 0.0, 0.0)),
                         ));
+
+                    // to label the keyboard commands
+                    parent.spawn((
+                        Text::new(
+                            "Keyboard and Mouse Commands:"
+                        ),
+                        Node {
+                            margin: UiRect {
+                                top: Val::Px(5.0),
+                                bottom: Val::Px(5.0),
+                                ..Default::default()
+                            },
+                            justify_content: JustifyContent::Center,
+                            align_items: AlignItems::Center,
+                            ..default()
+                        },
+                        TextFont {
+                            font: font.clone(),
+                            font_size: PATH_FONT_SIZE,
+                            ..default()
+                        }
+                    ));
+                    parent.spawn((
+                        Text::new(
+                            "C : capture 1 snapshot"
+                        ),
+                        TextFont {
+                            font: font.clone(),
+                            font_size: PATH_FONT_SIZE,
+                            ..default()
+                        }
+                    ));
+                    parent.spawn((
+                        Text::new(
+                            "L : enter or exit live preview mode"
+                        ),
+                        TextFont {
+                            font: font.clone(),
+                            font_size: PATH_FONT_SIZE,
+                            ..default()
+                        }
+                    ));
+                    parent.spawn((
+                        Text::new(
+                            "I : enter or exit interactive mode"
+                        ),
+                        TextFont {
+                            font: font.clone(),
+                            font_size: PATH_FONT_SIZE,
+                            ..default()
+                        }
+                    ));
+                    parent.spawn((
+                        Text::new(
+                            "Q : render the previous model"
+                        ),
+                        TextFont {
+                            font: font.clone(),
+                            font_size: PATH_FONT_SIZE,
+                            ..default()
+                        }
+                    ));
+                    parent.spawn((
+                        Text::new(
+                            "E : render the next model"
+                        ),
+                        TextFont {
+                            font: font.clone(),
+                            font_size: PATH_FONT_SIZE,
+                            ..default()
+                        }
+                    ));
+                    parent.spawn((
+                        Text::new(
+                            "SPACE : enter or exit live capture mode"
+                        ),
+                        TextFont {
+                            font: font.clone(),
+                            font_size: PATH_FONT_SIZE,
+                            ..default()
+                        }
+                    ));
+                    parent.spawn((
+                        Text::new(
+                            "ARROW KEY : rotate model"
+                        ),
+                        TextFont {
+                            font: font.clone(),
+                            font_size: PATH_FONT_SIZE,
+                            ..default()
+                        }
+                    ));
+                    parent.spawn((
+                        Text::new(
+                            "WASD : move the model"
+                        ),
+                        TextFont {
+                            font: font.clone(),
+                            font_size: PATH_FONT_SIZE,
+                            ..default()
+                        }
+                    ));
+                    parent.spawn((
+                        Text::new(
+                            "MOUSE WHEEL : zoom in or out"
+                        ),
+                        TextFont {
+                            font: font.clone(),
+                            font_size: PATH_FONT_SIZE,
+                            ..default()
+                        }
+                    ));
+                    parent.spawn((
+                        Text::new(
+                            "MOUSE DRAG : rotate the model"
+                        ),
+                        TextFont {
+                            font: font.clone(),
+                            font_size: PATH_FONT_SIZE,
+                            ..default()
+                        }
+                    ));
                 });
         });
 }
