@@ -205,8 +205,10 @@ pub fn menu(mut commands: Commands, asset_server: Res<AssetServer>) {
 pub fn button_click_system(
     commands: Commands,
     asset_server: Res<AssetServer>,
-    asset_path: ResMut<AssetPath>,
+    mut asset_path: ResMut<AssetPath>,
     interactive_mode: Query<&Interaction, (Changed<Interaction>, With<InteractiveMode>)>,
+    clear_model_assets: Query<&Interaction, (Changed<Interaction>, With<ClearModelAssetsButton>)>,
+    clear_skybox_assets: Query<&Interaction, (Changed<Interaction>, With<ClearSkyboxAssetsButton>)>,
     operation_window: ResMut<OperationWindowRelatedEntities>,
     mut app_state: ResMut<NextState<AppState>>,
     mut operation_state: ResMut<NextState<OperationState>>,
@@ -223,10 +225,10 @@ pub fn button_click_system(
         Query<(&mut TextColor, &SkyboxPathLabel)>,
     )>,
     operation_settings: Res<OperationSettings>,
+    mut save_settings: ResMut<SavePathList>,
 ) {
     // Check if the files and all were valid then enter window to render 3d model or warn user about invalid file
     if let Ok(Interaction::Pressed) = interactive_mode.get_single() {
-        println!("Enter Opration Mode 👷‍♂️");
         let mut proceed = true;
 
         if asset_path.models_path.len() <= 0 {
@@ -251,6 +253,7 @@ pub fn button_click_system(
             proceed = false;
         }
 
+        println!("Enter Opration Mode 👷‍♂️");
         if proceed {
             if asset_server.is_loaded(skybox_attributes.skybox_handler.as_ref().unwrap()) {
                 interactive(
@@ -266,6 +269,30 @@ pub fn button_click_system(
                 operation_state.set(OperationState::Interactive)
             }
         }
+    }
+
+    if let Ok(Interaction::Pressed) = clear_model_assets.get_single() {
+        println!("Clearing 3d model assets 🗑️");
+        // remove all save path list and reset the current path count
+        save_settings.current_path_count = 0;
+        save_settings.save_path_list = vec![];
+
+        // remove all model path and reset the current model path count
+        asset_path.models_path = vec![];
+        asset_path.current_model_path_count = 0;
+
+        for (mut text, _) in path_label_param_set.p0().iter_mut() {
+            text.0 = "[ 3d model asset(s) ]: -".to_string();
+        }
+    }
+
+    if let Ok(Interaction::Pressed) = clear_skybox_assets.get_single() {
+        println!("Clearing skybox assets 🗑️");
+        asset_path.skybox_path = "".to_string();
+        for (mut text, _) in path_label_param_set.p1().iter_mut() {
+            text.0 = "[ skybox asset ]: -".to_string();
+        }
+        
     }
 }
 
@@ -319,6 +346,7 @@ pub fn file_drag_and_drop_system(
                 };
 
                 save_settings.save_path_list.push(image_save_path);
+                println!("save setting: {:?}", save_settings);
 
                 for (mut text, _) in &mut path_label_param_set.p0().iter_mut() {
                     text.0 = format!(
@@ -373,6 +401,8 @@ pub fn file_drag_and_drop_system(
 
                 live_capture_settings.live_capture_iteration =
                     new_json_setting.live_capture_iteration;
+
+                save_settings.base_dir_path = new_json_setting.image_save_dir;
             }
         }
     }
