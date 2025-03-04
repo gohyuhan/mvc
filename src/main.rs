@@ -40,7 +40,7 @@ use types::*;
 // arrow key: rotate model
 // wasd: move the model
 // mouse wheel: zoom in or out
-// mouse left click and move: rotate the model
+// mouse drag: rotate the model
 
 fn main() {
     // init the app setting
