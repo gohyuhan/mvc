@@ -14,3 +14,9 @@ pub struct AppSettings {
     pub zoom_sensitivity: f32,
     pub live_capture_iteration: usize,
 }
+
+#[derive(Debug, Clone)]
+pub struct SavePath {
+    pub current_dir_path: String,
+    pub file_name_prefix: String,
+}

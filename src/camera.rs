@@ -10,7 +10,7 @@ use crate::{
     components::{ModelRotateReposition, OrbitCamera},
     resource::{
         LiveCameraPanNumber, LiveCaptureOperationSettings, OperationSettings,
-        OperationWindowRelatedEntities, SavePath,
+        OperationWindowRelatedEntities, SavePathList,
     },
     states::{CameraFovInitializedState, OperationState},
 };
@@ -136,7 +136,7 @@ pub fn live_capture_camera(
     mut operation_state: ResMut<NextState<OperationState>>,
     operation_window: Res<OperationWindowRelatedEntities>,
     mut live_capture_settings: ResMut<LiveCaptureOperationSettings>,
-    save_settings: Res<SavePath>,
+    save_settings: Res<SavePathList>,
     mut window_query: Query<&mut Window, Without<PrimaryWindow>>,
 ) {
     let orbit_query = query.get_single_mut();

@@ -5,20 +5,21 @@ use bevy::{
     render::view::screenshot::{save_to_disk, Screenshot},
 };
 
-use crate::resource::{OperationWindowRelatedEntities, SavePath};
+use crate::resource::{OperationWindowRelatedEntities, SavePathList};
 
 // as the function name suggest, take a snapshot ( will be taking snapshot for the 3d model window )
 pub fn take_snapshot(
     mut commands: Commands,
     operation_window: Res<OperationWindowRelatedEntities>,
-    save_settings: &SavePath,
+    save_settings: &SavePathList,
     yaw: f32,
     pitch: f32,
     radius: f32,
 ) {
-    let path = Path::new(&save_settings.current_dir_path).join(format!(
+    let current_save_path_info = &save_settings.save_path_list[save_settings.current_path_count];
+    let path = Path::new(&current_save_path_info.current_dir_path).join(format!(
         "{}_{}_{}_{}.jpg",
-        save_settings.file_name_prefix, yaw, pitch, radius
+        current_save_path_info.file_name_prefix, yaw, pitch, radius
     ));
 
     // spawn the entity to capture snapshot of a window

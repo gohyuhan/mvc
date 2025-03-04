@@ -13,7 +13,7 @@ use crate::{
     components::OrbitCamera,
     resource::{
         LiveCameraPanNumber, LiveCaptureOperationSettings, OperationSettings,
-        OperationWindowRelatedEntities, SavePath,
+        OperationWindowRelatedEntities, SavePathList,
     },
     states::{AppState, CameraFovInitializedState, OperationState},
     types::AppSettings,
@@ -105,7 +105,7 @@ pub fn keyboard_interact(
     query: Query<&OrbitCamera>,
     mut operation_settings: ResMut<OperationSettings>,
     mut live_capture_settings: ResMut<LiveCaptureOperationSettings>,
-    save_settings: Res<SavePath>,
+    save_settings: Res<SavePathList>,
     mut window_query: Query<&mut Window, Without<PrimaryWindow>>,
 ) {
     let c_o_s = current_operation_state.as_ref().get();
@@ -302,8 +302,9 @@ fn generate_points(
         .collect();
 }
 
-fn snapshot_directory_init(save_settings: SavePath) {
-    let snapshot_path = Path::new(&save_settings.current_dir_path);
+fn snapshot_directory_init(save_settings: SavePathList) {
+    let snapshot_path =
+        Path::new(&save_settings.save_path_list[save_settings.current_path_count].current_dir_path);
     if !snapshot_path.exists() {
         create_dir_all(&snapshot_path).unwrap();
     }

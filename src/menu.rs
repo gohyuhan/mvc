@@ -10,10 +10,10 @@ use crate::{
     render::interactive,
     resource::{
         AssetPath, LiveCaptureOperationSettings, OperationSettings, OperationWindowRelatedEntities,
-        SavePath, SkyboxAttribute,
+        SavePathList, SkyboxAttribute,
     },
     states::{AppState, OperationState},
-    types::AppSettings,
+    types::{AppSettings, SavePath},
     utils::{check_json_file, check_model_file, check_skybox_file, get_user_directory},
 };
 
@@ -64,7 +64,7 @@ pub fn menu(mut commands: Commands, asset_server: Res<AssetServer>) {
 
                     // to label the path to the 3d file to let user know which model will be render
                     parent.spawn((
-                        Text::new("[3d model asset]: -"),
+                        Text::new("[ 3d model asset(s) ]: -"),
                         Node {
                             top: Val::Px(20.),
                             justify_content: JustifyContent::Center,
@@ -81,7 +81,7 @@ pub fn menu(mut commands: Commands, asset_server: Res<AssetServer>) {
 
                     // to label the path to the 3d file to let user know which model will be render
                     parent.spawn((
-                        Text::new("[skybox asset]: -"),
+                        Text::new("[ skybox asset ]: -"),
                         Node {
                             top: Val::Px(20.),
                             justify_content: JustifyContent::Center,
@@ -153,11 +153,11 @@ pub fn button_click_system(
     // Check if the files and all were valid then enter window to render 3d model or warn user about invalid file
     if let Ok(Interaction::Pressed) = interactive_mode.get_single() {
         println!("Enter Opration Mode 👷‍♂️");
-        let a_p = asset_path.clone();
         let mut proceed = true;
-        if !check_model_file(&a_p.model_path) {
+
+        if asset_path.models_path.len() <= 0 {
             for (mut text, _) in path_label_param_set.p0().iter_mut() {
-                text.0 = "[3d model asset]: Please Provide a valid file".to_string();
+                text.0 = "[ 3d model asset(s) ]: Please Provide at least 1 file".to_string();
             }
             for (mut text, _) in &mut path_label_color_param_set.p0().iter_mut() {
                 text.0 = Color::srgb(255., 0.0, 0.0);
@@ -166,9 +166,9 @@ pub fn button_click_system(
             proceed = false;
         }
 
-        if !check_skybox_file(&a_p.skybox_path) {
+        if !check_skybox_file(&asset_path.skybox_path) {
             for (mut text, _) in path_label_param_set.p1().iter_mut() {
-                text.0 = "[skybox asset]: Please Provide a valid file".to_string();
+                text.0 = "[ skybox asset ]: Please Provide a valid file".to_string();
             }
             for (mut text, _) in &mut path_label_color_param_set.p1().iter_mut() {
                 text.0 = Color::srgb(255., 0.0, 0.0);
@@ -182,7 +182,7 @@ pub fn button_click_system(
                 interactive(
                     commands,
                     asset_server,
-                    a_p.model_path.clone(),
+                    asset_path.models_path[asset_path.current_model_path_count].clone(),
                     images,
                     skybox_attributes,
                     operation_window,
@@ -211,7 +211,7 @@ pub fn file_drag_and_drop_system(
         Query<(&mut TextColor, &ModelPathLabel)>,
         Query<(&mut TextColor, &SkyboxPathLabel)>,
     )>,
-    mut save_settings: ResMut<SavePath>,
+    mut save_settings: ResMut<SavePathList>,
     mut operation_settings: ResMut<OperationSettings>,
     mut live_capture_settings: ResMut<LiveCaptureOperationSettings>,
 ) {
@@ -224,18 +224,33 @@ pub fn file_drag_and_drop_system(
             let p = path_buf.to_str().unwrap().to_string();
 
             if check_model_file(&p) {
+                let string_path = path_buf.to_str().unwrap().to_string();
+                // check if we already have the file path info within the models_path array to prevent duplicate model rendering
+                if three_d_model_asset_path.models_path.contains(&string_path) {
+                    return;
+                }
                 // to check if model file then save the path, the directory name and file prefix
-                three_d_model_asset_path.model_path = path_buf.to_str().unwrap().to_string();
+                three_d_model_asset_path.models_path.push(string_path);
                 let filename = path_buf.file_stem().unwrap().to_str().unwrap().to_string();
-                save_settings.current_dir_path = PathBuf::from(&save_settings.base_dir_path)
+                let current_dir_path = PathBuf::from(&save_settings.base_dir_path)
                     .join(&filename)
                     .to_str()
                     .unwrap()
                     .to_string();
-                save_settings.file_name_prefix = filename;
+                let file_name_prefix = filename;
+
+                let image_save_path = SavePath {
+                    current_dir_path,
+                    file_name_prefix,
+                };
+
+                save_settings.save_path_list.push(image_save_path);
 
                 for (mut text, _) in &mut path_label_param_set.p0().iter_mut() {
-                    text.0 = format!("[3d model asset]: {}", p.clone())
+                    text.0 = format!(
+                        "[ 3d model asset(s) ]: {} files",
+                        three_d_model_asset_path.models_path.len()
+                    )
                 }
                 for (mut text, _) in &mut path_label_color_param_set.p0().iter_mut() {
                     text.0 = Color::srgb(255., 255., 255.);
@@ -251,7 +266,7 @@ pub fn file_drag_and_drop_system(
                     skybox_handler: Some(skybox_handle),
                 });
                 for (mut text, _) in &mut path_label_param_set.p1().iter_mut() {
-                    text.0 = format!("[skybox asset]: {}", p.clone())
+                    text.0 = format!("[ skybox asset ]: {}", p.clone())
                 }
                 for (mut text, _) in &mut path_label_color_param_set.p1().iter_mut() {
                     text.0 = Color::srgb(255., 255., 255.);

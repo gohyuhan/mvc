@@ -48,13 +48,14 @@ fn main() {
     // set the resource
     app.insert_resource(DirectionalLightShadowMap { size: 4096 });
     app.insert_resource(AssetPath {
-        model_path: "".to_string(),
+        models_path: vec![],
         skybox_path: "".to_string(),
+        current_model_path_count: 0,
     });
-    app.insert_resource(SavePath {
-        base_dir_path: app_settings.image_save_dir,
-        current_dir_path: "".to_string(),
-        file_name_prefix: "".to_string(),
+    app.insert_resource(SavePathList {
+        base_dir_path: app_settings.image_save_dir.clone(),
+        save_path_list: vec![],
+        current_path_count: 0,
     });
     app.insert_resource(SkyboxAttribute {
         skybox_handler: None,

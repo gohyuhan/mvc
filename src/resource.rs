@@ -5,17 +5,20 @@ use bevy::{
     scene::Scene,
 };
 
+use crate::types::SavePath;
+
 #[derive(Resource, Debug, Clone)]
 pub struct AssetPath {
-    pub model_path: String,
+    pub models_path: Vec<String>,
     pub skybox_path: String,
+    pub current_model_path_count: usize,
 }
 
 #[derive(Resource, Debug, Clone)]
-pub struct SavePath {
+pub struct SavePathList {
     pub base_dir_path: String,
-    pub current_dir_path: String,
-    pub file_name_prefix: String,
+    pub save_path_list: Vec<SavePath>,
+    pub current_path_count: usize,
 }
 
 #[derive(Resource)]
