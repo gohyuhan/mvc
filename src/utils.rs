@@ -211,11 +211,11 @@ pub fn init_app() -> AppSettings {
     const YAW_MAX_VALUE: f32 = 1.27;
     const PITCH_MIN_VALUE: f32 = -0.90;
     const PITCH_MAX_VALUE: f32 = -0.20;
-    const RADIUS_RANGE: f32 = 200.0;
-    const MODEL_ROTATE_SENSITIVITY: f32 = 0.05;
-    const MODEL_REPOSITION_SENSITIVITY: f32 = 0.05;
+    const RADIUS_RANGE: f32 = 100.0;
+    const MODEL_ROTATE_SENSITIVITY: f32 = 0.025;
+    const MODEL_REPOSITION_SENSITIVITY: f32 = 1.0;
     const MOUSE_SENSITIVITY: f32 = 0.0025;
-    const ZOOM_SENSITIVITY: f32 = 0.25;
+    const ZOOM_SENSITIVITY: f32 = 25.0;
     const LIVE_CAPTURE_ITERATION: usize = 5000;
 
     // check if there is a settings file, if not create it

@@ -252,7 +252,7 @@ pub fn initialized_camera_fov(
                                 (((scaled_model.length() / 2.0)
                                     / (horizontal_fov_radians / 2.0).tan())
                                     + scaled_model[2])
-                                    * 1.50,
+                                    * 1.15,
                             );
                         }
 
@@ -267,8 +267,10 @@ pub fn initialized_camera_fov(
                         // set the camera distance
                         camera_transform.translation = Vec3::new(0.0, 0.0, orbit.radius);
 
-                        // set the operation settings radius range
+                        // set the operation settings based on scaling of the model
                         operation_settings.radius_range *= model_zoom_scale;
+                        operation_settings.zoom_sensitivity *= model_zoom_scale;
+                        operation_settings.model_reposition_sensitivity *= model_zoom_scale;
 
                         // set the camera initialized state
                         camera_init_status.set(CameraFovInitializedState::Initialized);

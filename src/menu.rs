@@ -445,7 +445,6 @@ pub fn file_drag_and_drop_system(
                     };
 
                     save_settings.save_path_list.push(image_save_path);
-                    println!("save setting: {:?}", save_settings);
 
                     for (mut text, _) in &mut path_label_param_set.p0().iter_mut() {
                         text.0 = format!(
