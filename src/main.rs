@@ -156,9 +156,6 @@ fn main() {
                     .and(in_state(OperationState::Interactive))
                     .and(in_state(CameraFovInitializedState::Initialized)),
             ),
-            setup_ambient_light.run_if(
-                in_state(AppState::OperationMode).and(in_state(AppState::ModelSwitchingMode)),
-            ),
             switch_state_on_window_event,
         ),
     );

@@ -91,14 +91,63 @@ pub fn interactive(
         .insert(Transform::from_scale(Vec3::new(0.5, 0.5, 0.5)))
         .id();
 
-    // directional light
-    let directional_light = commands
-        .spawn((DirectionalLight {
-            illuminance: 300.0,
-            shadows_enabled: false,
-            ..default()
-        },))
-        .id();
+    // light from top
+    let top_light = commands
+        .spawn(
+    (    
+                DirectionalLight {
+                    illuminance: 800.0,
+                    shadows_enabled: false,
+                    ..default()
+                },
+                Transform::from_rotation(Quat::from_euler(EulerRot::XYZ, 0.0, 0.0, 0.0)), // Points along -Z (default)
+            )
+        ).id();
+
+    // light from front
+    let front_light = commands
+        .spawn(
+    (    
+                DirectionalLight {
+                    illuminance: 800.0,
+                    shadows_enabled: false,
+                    ..default()
+                },
+                Transform::from_rotation(Quat::from_euler(EulerRot::XYZ, -std::f32::consts::FRAC_PI_2, 0.0, 0.0)), // -90 deg
+            )
+        ).id();
+
+    // light from top right
+    let top_right_light =  commands
+        .spawn(
+    (    
+                DirectionalLight {
+                    illuminance: 800.0,
+                    shadows_enabled: false,
+                    ..default()
+                },
+                Transform::from_rotation(Quat::from_euler(EulerRot::XYZ, -std::f32::consts::FRAC_PI_4, std::f32::consts::FRAC_PI_4, 0.0)), // -45° X, +45° Y
+            )
+        ).id();
+    
+    // light from top left
+    let top_left_light = commands
+        .spawn(
+    (    
+                DirectionalLight {
+                    illuminance: 800.0,
+                    shadows_enabled: false,
+                    ..default()
+                },
+                Transform::from_rotation(Quat::from_euler(EulerRot::XYZ, -std::f32::consts::FRAC_PI_4, -std::f32::consts::FRAC_PI_4, 0.0)), // -45° X, -45° Y
+            )
+        ).id();
+        
+    // ambient light to fill in any unlit areas
+    commands.insert_resource(AmbientLight {
+            color: Color::WHITE,
+            brightness: 800.0,
+        });
 
     // the scene handler
     let scene_handler = asset_server.load(GltfAssetLabel::Scene(0).from_asset(model_path.clone()));
@@ -130,7 +179,10 @@ pub fn interactive(
     let entities_list: Vec<Entity> = vec![
         interac_window,
         interac_window_camera,
-        directional_light,
+        top_light,
+        front_light,
+        top_right_light,
+        top_left_light,
         node_entity,
     ];
 
@@ -139,10 +191,6 @@ pub fn interactive(
     operation_window.entities_list = Some(entities_list);
     operation_window.current_scene_handler = Some(scene_handler);
     operation_window.current_scene_entity = Some(scene_entity);
-}
-// set the ambient light that is used for the scene
-pub fn setup_ambient_light(mut ambient_light: ResMut<AmbientLight>) {
-    ambient_light.brightness = 300.0;
 }
 
 // to reposition the model on the 3D environment
